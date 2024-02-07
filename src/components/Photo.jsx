@@ -10,8 +10,8 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button'; // Make sure to import Button
 import Stack from '@mui/material/Stack'; // Make sure to import Stack
 
-export default function PhotoCards(){
-
+export default function Cards({ props }){
+return(
 <Box
           sx={{
             bgcolor: 'background.paper',
@@ -27,12 +27,12 @@ export default function PhotoCards(){
               color="text.primary"
               gutterBottom
             >
-              Byte-Sized Recipes
+            {props.title}
             </Typography>
             
                   {/* After form creation is made, have it route back to this. Use mapping or ..prevValue */}
             <Typography variant="h5" align="center" color="text.secondary" paragraph>
-              This is a placeholder for the recipes that will be here instead
+              {props.description}
             </Typography> 
             <Stack
               sx={{ pt: 4 }}
@@ -40,9 +40,11 @@ export default function PhotoCards(){
               spacing={2}
               justifyContent="center"
             >
-              <Button variant="contained">Create!</Button>
-              <Button variant="outlined">Cookbook</Button>
+              <Button variant="contained">view</Button>
+              
+
             </Stack>
           </Container>
         </Box>
+)
 }

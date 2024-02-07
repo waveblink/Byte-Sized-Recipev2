@@ -1,13 +1,14 @@
 // Album.js
-import React from 'react';
-import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { ThemeProvider, createTheme, CssBaseline, useThemeProps } from '@mui/material';
 import AppBarComponent from './AppBar';
 import HeroUnit from './Hero';
-import PhotoCards from './Photo';
+import Cards from './Photo';
 import Footer from './Footer';
 
+
 const defaultTheme = createTheme();
-const cards = [1, 2, 3];
+
 
 export default function Album() {
   return (
@@ -16,7 +17,16 @@ export default function Album() {
       <AppBarComponent />
       <main>
         <HeroUnit />
-        <PhotoCards cards={cards}/>
+        <Cards title="Testing card title" 
+        description="Testing description"/>
+
+        <Cards title="Testing card title" 
+        description="Testing description"/>
+
+         <Cards 
+         title="Testing card title" 
+         description="Testing description"
+        />
       </main>
       <Footer />
     </ThemeProvider>
