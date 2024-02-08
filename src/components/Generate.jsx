@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, Container, TextField, Button, Typography, Box , InputLabel, Select, MenuItem} from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Container, TextField, Button, Typography, Box , InputLabel, Select, MenuItem, FormControl} from '@mui/material';
 import Footer from './Footer';
 import HoverRating from './Hover';
 
@@ -56,17 +56,20 @@ export default function Generate() {
             value={formData.name}
             onChange={handleChange}
           />
-        <InputLabel id="cuisine-label">Cuisine</InputLabel>
-          <Select
-              labelId="cuisine-label"
-              id="cuisine"
-              name="cuisine" // This should match the state field name
-              value={formData.cuisine}
-              label="Cuisine"
-              onChange={handleChange}
-              fullWidth // To make it match the width of other text fields
-              margin="normal" // For consistent spacing
-          >
+                <FormControl fullWidth variant="outlined" margin="normal">
+              <InputLabel id="cuisine-label">Cuisine</InputLabel>
+              <Select
+                labelId="cuisine-label"
+                id="cuisine"
+                name="cuisine"
+                value={formData.cuisine}
+                onChange={handleChange}
+                label="Cuisine" // This ensures the label moves correctly
+              >
+
+                <MenuItem value="" disabled>
+            Cuisine
+            </MenuItem>
             <MenuItem value={"Italian"}>Italian</MenuItem>
             <MenuItem value={"American"}>American</MenuItem>
             <MenuItem value={"English"}>English</MenuItem>
@@ -76,6 +79,8 @@ export default function Generate() {
             <MenuItem value={"Mexican"}>Mexican</MenuItem>
             <MenuItem value={"Other"}>Other</MenuItem>
           </Select>
+          </FormControl>
+
           <TextField
             variant="outlined"
             margin="normal"
