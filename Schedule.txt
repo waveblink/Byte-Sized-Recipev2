@@ -1,0 +1,4 @@
+2/8/24 - Today Goals to get done - 
+1: Create all the get requests and finsih all the routing so that I can get from one page to another ✅
+2: Work on the form tab for creating recipes (will add a button later on to convert recipes from chatgpt into being able to be saved but for now will have a manual form)✅
+3: Connect the form to a postgres Database

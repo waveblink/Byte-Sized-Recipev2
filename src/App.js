@@ -6,7 +6,7 @@ import Navbar from './components/Navbar'; // Assuming Navbar is meant to be glob
 import Cookbook from './components/Cookbook';
 import Generate from './components/Generate';
 import Footer from './components/Footer'; // Assuming Footer is meant to be global
-import Register from './Register';
+import Register from './components/Register';
 import Login from './components/Login';
 
 function App() {

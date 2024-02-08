@@ -14,6 +14,8 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const defaultTheme = createTheme();
+//Will need to caryry login name props so that it shows up on the home page.
+//post request so that when you are logged in sends you to home screen
 
 function Copyright(props) {
   return (
