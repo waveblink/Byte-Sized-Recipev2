@@ -4,6 +4,7 @@ import path from "path";
 import dotenv from "dotenv";
 import pkg from 'pg';
 const { Pool } = pkg;
+import { query } from "./db.js"; // Adjust the path as necessary
 
 
 
@@ -13,14 +14,20 @@ const port = 3000;
 dotenv.config();
 
 
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASS,
-    database: process.env.DB_NAME,
-    port: 5432
-  }); 
-  
+app.get('/api/data', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM your_table');
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Other server setup...
+
+
+
 
 app.use(express.static(path.join(__dirname, 'build')));
 
