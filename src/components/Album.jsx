@@ -20,6 +20,7 @@ export default function Album() {
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
+      
       <main>
         {/* Pass cardsData as a prop to the first PhotoCards component */}
         <PhotoCards cards={cardsData} />

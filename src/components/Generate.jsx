@@ -21,10 +21,48 @@ export default function Generate() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    alert(`Name: ${formData.name}, Cuisine: ${formData.cuisine}, Meal Type: ${formData.mealType}, Ingredients: ${formData.ingredients}, Instructions: ${formData.instructions}`);
+    
+    try {
+      const response = await fetch('/api/submit-recipe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (response.ok) {
+        const responseBody = await response.json();
+        console.log(responseBody);
+        alert('Recipe submitted Successfully!');
+        
+        // Reset the form data here, within the scope of `handleSubmit` and after a successful response
+        setFormData({
+          name: "",
+          cuisine: "",
+          mealType: "",
+          ingredients: "",
+          instructions: ""
+          // Make sure to reset the rating as well, if it's part of formData
+        });
+      } else {
+        alert('Failed to submit recipe.');
+      }
+    } catch (error) {
+      console.error('Error submitting recipe:', error);
+      alert('Error submitting recipe.');
+    }
   };
+
+  const handleRatingChange = (newRating) => {
+    setFormData({ ...formData, rating: newRating });
+ 
+  }
+  
 
   const defaultTheme = createTheme();
 //Change 
@@ -118,8 +156,10 @@ export default function Generate() {
             value={formData.instructions}
             onChange={handleChange}
           />
-          <HoverRating />
+          <HoverRating onRatingChange={handleRatingChange} />
+          
           <Button
+          
             type="submit"
             fullWidth
             variant="contained"
