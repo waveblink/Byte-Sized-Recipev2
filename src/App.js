@@ -1,13 +1,14 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
-import Album from './components/Album';
-import Navbar from './components/Navbar'; // Assuming Navbar is meant to be global
-import Cookbook from './components/Cookbook';
-import Generate from './components/Generate';
-import Footer from './components/Footer'; // Assuming Footer is meant to be global
-import Register from './components/Register';
-import Login from './components/Login';
+import Album from './components/Album.jsx';
+import Navbar from './components/Navbar.jsx'; // Assuming Navbar is meant to be global
+import Cookbook from './components/Cookbook.jsx';
+import Generate from './components/Generate.jsx';
+import Footer from './components/Footer.jsx'; // Assuming Footer is meant to be global
+import Register from './components/Register.jsx';
+import Login from './components/Login.jsx';
+
 
 function App() {
   return (

@@ -1,5 +1,7 @@
-import { Pool } from 'pg';
+// Correctly import the pg package and destructure Pool from it
 import dotenv from 'dotenv';
+import pg from 'pg';
+const { Pool } = pg;
 
 dotenv.config();
 
@@ -9,9 +11,10 @@ const pool = new Pool({
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
-  port: 5432
+  port: process.env.DB_PORT || 5432,
 });
 
+// Async function to query the database
 export const query = async (text, params) => {
   try {
     const response = await pool.query(text, params);

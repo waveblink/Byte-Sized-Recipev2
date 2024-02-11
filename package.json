@@ -1,5 +1,6 @@
 {
   "name": "byte-sizedv2",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -10,7 +11,9 @@
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.1",
+    "pg": "^8.11.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
@@ -21,7 +24,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "server": "node app.js",
+    "dev": "concurrently \"npm start\" \"npm run server\""
   },
   "eslintConfig": {
     "extends": [

@@ -1,70 +1,46 @@
 import cors from 'cors';
-import { query } from './db/db.js'; // Adjust the path as necessary
 import express from "express";
-import bodyParser from "body-parser";
 import path from "path";
 import dotenv from "dotenv";
-import recipeRoutes from './routes/recipeRoutes.js';
+import recipeRoutes from './routes/recipeRoutes.js'; // Ensure this path is correct
+import { fileURLToPath } from 'url';
 
-
-
-
-const app = express();
-const port = 3000;
-app.use(express.json());
-app.use(cors());
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
-app.use('/api', recipeRoutes);
+const app = express();
+const port = process.env.PORT || 4000;
 
+// Middleware to parse JSON bodies. This should come before your routes.
+app.use(express.json());
 
-app.get('/api/data', async (req, res) => {
-  try {
-    const result = await query('SELECT * FROM recipes');
-    res.json(result.rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send('Server error');
-  }
+// CORS middleware should also be setup early, before your routes.
+app.use(cors());
+
+// Middleware for logging incoming requests. It's good to have this early too, so every request gets logged.
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.path}`);
+  next();
 });
 
-// Other server setup...
+// Use the recipe routes for anything under '/api'
+app.use('/api', recipeRoutes);
 
+// A simple test route can be kept here after the essential middleware
+app.post('/api/test', (req, res) => {
+  res.send('Test route is working');
+});
 
-
-
+// Serve static files from the React build directory
 app.use(express.static(path.join(__dirname, 'build')));
 
+// Serve index.html for all remaining routes to support SPA
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'build', 'index.html'));
-  });
+});
 
-app.post('/api/submit-recipe', async (req,res) => {
-  const{name, cuisine, mealType, ingredients, instructions, rating} = req.body;
-
-  try{
-    const cuisineResult = await query('SELECT id FROM cuisines WHERE name = $1', [cuisine]);
-    const cuisineId = cuisineResult.rows[0]?.id;
-
-    if (!cuisineId){
-      return res.status(400).json({error: "Cuisine not found" });
-    }
-    const result = await query(
-      'INSERT INTO recipes (name, cuisine_id, mealType, ingredients, instructions, rating) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-      [name, cuisineId, mealType, ingredients, instructions, rating]
-    );
-
-    res.json(result.rows[0]);
-
-  }catch (err){
-    console.error('Error inserting recipe:', err);
-    res.status(500).send('Server error');
-  }
-
-})
-
-  
-
-  app.listen(port, () => {
+// Start the server
+app.listen(port, () => {
     console.log(`Server listening on port ${port}`);
-  });
+});

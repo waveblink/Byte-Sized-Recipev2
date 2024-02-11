@@ -1,11 +1,11 @@
 // Album.js
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, useThemeProps } from '@mui/material';
-import AppBarComponent from './AppBar';
-import PhotoCards from './Hero'; // Correct import
-import Cards from './Photo';
-import Footer from './Footer';
-import Navbar from './Navbar';
+import AppBarComponent from './AppBar.jsx';
+import PhotoCards from './Hero.jsx'; // Correct import
+import Cards from './Photo.jsx';
+import Footer from './Footer.jsx';
+import Navbar from './Navbar.jsx';
 
 const defaultTheme = createTheme();
 

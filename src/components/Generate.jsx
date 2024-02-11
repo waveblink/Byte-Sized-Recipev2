@@ -3,6 +3,9 @@ import { ThemeProvider, createTheme, CssBaseline, Container, TextField, Button, 
 import Footer from './Footer';
 import HoverRating from './Hover';
 
+
+
+
 export default function Generate() {
   const [formData, setFormData] = useState({
     name: "",
@@ -27,7 +30,7 @@ export default function Generate() {
     event.preventDefault();
     
     try {
-      const response = await fetch('/api/submit-recipe', {
+      const response = await fetch('http://localhost:4000/api/submit-recipe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
