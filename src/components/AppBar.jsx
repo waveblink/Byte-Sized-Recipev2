@@ -5,7 +5,7 @@ import CameraIcon from '@mui/icons-material/PhotoCamera';
 
 export default function AppBarComponent() {
   return (
-    <AppBar position="relative">
+    <AppBar position="relative" sx={{ pb: 4 }}>
       <Toolbar>
         <IconButton edge="start" color="inherit" aria-label="open drawer">
           <CameraIcon />

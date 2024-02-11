@@ -27,5 +27,22 @@ router.post('/submit-recipe', async (req, res) => {
         res.status(500).json({ message: 'An error occurred while inserting the recipe.' });
     }
 });
+
+router.get('/recipes', async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    try {
+        const result = await query('SELECT  * FROM recipes LIMIT $1 OFFSET $2',
+        [limit, offset]
+        );
+
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching recipe:', err);
+        // Consider more detailed error handling here
+        res.status(500).json({ message: 'An error occurred while fetching the recipe.' });
+    }
+});
 // Export the router
 export default router;

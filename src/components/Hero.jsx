@@ -9,8 +9,13 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 
+
+
 // Assuming 'cards' array is passed as props
 export default function PhotoCards({ cards  }) {
+
+    
+
     return (
         <Container sx={{ py: 8 }} maxWidth="md">
             <Grid container spacing={4}>
