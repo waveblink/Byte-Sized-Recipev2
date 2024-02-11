@@ -28,6 +28,22 @@ router.post('/submit-recipe', async (req, res) => {
     }
 });
 
+router.delete('/recipes/:id', async (req,res) =>{
+    const recipeId = req.params.id;
+
+    try {
+        const result = await query('DELETE FROM recipes WHERE id =$1 RETURNING *', [recipeId]);
+
+        if (result.rows.length === 0){
+            return res.status(404).json({message: "Recipe not found"});
+        }
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error deleting recipe:', error);
+        res.status(500).json({ message: 'An error occurred while deleting the recipe.' });
+    }
+});
+
 router.get('/recipes', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
