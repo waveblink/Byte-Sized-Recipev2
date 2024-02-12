@@ -10,16 +10,31 @@ export default function ChatBot() {
     setQuery(e.target.value);
   };
 
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!query.trim()) {
+//         console.log("Query is empty");
+//         // Optionally, inform the user or simply return to avoid making an API call
+//         return;
+//     }
+//     // Proceed with making the API call
+// };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Has been clicked");
     try {
-      const response = await axios.post('/api/chatbot', { query, cuisine: 'Italian' }); // Example with 'Italian' cuisine
-      setResponses([...responses, { query, response: response.data.choices[0].text }]);
-      setQuery(''); // Reset query input
+        const response = await axios.post('http://localhost:4000/api/chatbot', { query, cuisine: 'Italian' }); // Fixed: added await
+        if (response.data.reply) {
+          setResponses([...responses, { query, response: response.data.reply}]);
+
+        } else {
+            console.error('No choices found in response:', response.data);
+        }
+        setQuery(''); // Reset query input
     } catch (error) {
-      console.error('Error fetching response:', error);
+        console.error('Error fetching response:', error);
     }
-  };
+};
 
   return (
     <Box sx={{ maxWidth: 600, margin: 'auto', textAlign: 'center' }}>

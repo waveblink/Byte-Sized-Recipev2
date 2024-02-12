@@ -8,6 +8,7 @@ import Generate from './components/Generate.jsx';
 import Footer from './components/Footer.jsx'; // Assuming Footer is meant to be global
 import Register from './components/Register.jsx';
 import Login from './components/Login.jsx';
+import ChatBot from './components/ChatBot.jsx';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/generate" element={<Generate />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/chatbot" element={<ChatBot />} />
 
           {/* Add more routes as needed */}
         </Routes>

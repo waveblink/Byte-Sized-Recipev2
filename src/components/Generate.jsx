@@ -166,7 +166,7 @@ export default function Generate() {
         name="simple-controlled"
         value={formData.rating}
         onChange={(event, newValue) => {
-        setFormData({ ...formData, rating: newValue });
+          setFormData({ ...formData, rating: newValue });
   }}
 />      
           <Button

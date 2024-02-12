@@ -1,6 +1,6 @@
 import express from 'express';
 import { query } from '../db/db.js'; // Adjust the path as necessary
-
+import axios from "axios";
 const router = express.Router();
 
 // Define a route for submitting recipes
@@ -41,35 +41,46 @@ router.get('/recipes/latest', async (req, res) =>{
     res.status(500).json({ message: 'An error occurred while fetching the latest recipes.' });
         
     }
-})
+});
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
 router.post('/chatbot', async (req, res) => {
     const userQuery = req.body.query;
     const cuisine = req.body.cuisine;
+    console.log("Chatbot endpoint hit", req.body);
 
     try {
-        const response = await axios.post('https://api.openai.com/v1/completions', {
-            model: "text-davinci-003", // Choose the model appropriate for your use case
-            prompt: `You are a chatbot specialized in ${cuisine} cuisine. ${userQuery}`,
-            temperature: 0.7,
-            max_tokens: 150,
-            top_p: 1.0,
-            frequency_penalty: 0.0,
-            presence_penalty: 0.0,
+        const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: "gpt-4-turbo-preview", // Adjust according to your subscription and the model's availability
+            messages: [
+                { role: "system", content: "You are a chatbot specialized in Italian cuisine." },
+                { role: "user", content: userQuery }
+            ],
         }, {
             headers: {
-              'Authorization': `Bearer ${OPENAI_API_KEY}`
+                'Authorization': `Bearer ${OPENAI_API_KEY}`
             }
-          });
-          
-          res.json(response.data); // Send OpenAI's response back to the frontend
-        } catch (error) {
-          console.error('Error calling OpenAI API:', error);
-          res.status(500).send('Failed to fetch response from OpenAI');
+        });
+
+        console.log("OpenAI response:", response.data);
+
+        // Extracting the chatbot's response assuming the first choice's message contains the response
+        // Check if the 'choices' array and 'message' object are structured as expected
+        if (response.data.choices && response.data.choices.length > 0) {
+            // Assuming 'message' object exists and has a 'content' property
+            const botResponse = response.data.choices[0].message.content;
+            console.log("Bot's response content:", botResponse);
+            res.json({ reply: botResponse });
+        } else {
+            console.log("Unexpected response structure or no choices returned.");
+            res.status(500).send("Chatbot response was not in the expected format.");
         }
-      });
-      
+    } catch (error) {
+        console.error('Error calling OpenAI API:', error);
+        res.status(500).send('Failed to fetch response from OpenAI');
+    }
+});
 
 router.delete('/recipes/:id', async (req,res) =>{
     const recipeId = req.params.id;
