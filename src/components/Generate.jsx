@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, Container, TextField, Button, Typography, Box , InputLabel, Select, MenuItem, FormControl} from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Container, TextField, Button, Typography, Box , InputLabel, Select, MenuItem, FormControl, Rating} from '@mui/material';
 import Footer from './Footer';
 import HoverRating from './Hover';
 
@@ -12,8 +12,10 @@ export default function Generate() {
     cuisine: "",
     mealType: "",
     ingredients: "",
-    instructions: ""
+    instructions: "",
+    rating: 0,
   });
+  
   
 
   const handleChange = (event) => {
@@ -49,7 +51,8 @@ export default function Generate() {
           cuisine: "",
           mealType: "",
           ingredients: "",
-          instructions: ""
+          instructions: "",
+          rating: 0,
           // Make sure to reset the rating as well, if it's part of formData
         });
       } else {
@@ -159,8 +162,13 @@ export default function Generate() {
             value={formData.instructions}
             onChange={handleChange}
           />
-          <HoverRating onRatingChange={handleRatingChange} />
-          
+        <Rating
+        name="simple-controlled"
+        value={formData.rating}
+        onChange={(event, newValue) => {
+        setFormData({ ...formData, rating: newValue });
+  }}
+/>      
           <Button
           
             type="submit"

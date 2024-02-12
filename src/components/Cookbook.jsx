@@ -66,7 +66,7 @@ export default function Cookbook() {
                 {recipe.name}
               </Typography>
               <Typography color='textSecondary'>
-                Cuisine: {recipe.cuisine}
+                Cuisine: {recipe.cuisine_name}
               </Typography>
               <Typography variant='body2' component='p'>
                 Ingredients: {recipe.ingredients}
@@ -80,8 +80,8 @@ export default function Cookbook() {
           View
           </Button>
               <IconButton 
-                            onClick={()=> deleteRecipe(recipe.id)}
-                            aria-label="delete" size="large">
+              onClick={()=> deleteRecipe(recipe.id)}
+              aria-label="delete" size="large">
               <DeleteIcon fontSize="inherit" />
               </IconButton>
               

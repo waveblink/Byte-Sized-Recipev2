@@ -1,6 +1,8 @@
 // Album.js
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, useThemeProps } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, useThemeProps, Grid, Card, CardContent, Typography, Rating, Button, IconButton } from '@mui/material';
+import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AppBarComponent from './AppBar.jsx';
 import PhotoCards from './Hero.jsx'; // Correct import
 import Cards from './Photo.jsx';
@@ -10,28 +12,61 @@ import Navbar from './Navbar.jsx';
 const defaultTheme = createTheme();
 
 export default function Album() {
+
+  const [recipes, setRecipes] = useState([]);
+
+  useEffect(() => {
+    const fetchLatestRecipes = async () => {
+      try {
+        const response = await fetch('http://localhost:4000/api/recipes/latest');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setRecipes(data);
+      } catch (error) {
+        console.error('Error fetching recipes: ', error);
+      }
+    };
+
+    fetchLatestRecipes();
+  }, []);
   
-  const cardsData = [
-    { id: 1, title: "Card 1", description: "Description for Card 1" },
-    { id: 2, title: "Card 2", description: "Description for Card 2" },
-    { id: 3, title: "Card 3", description: "Description for Card 3" }
-];
 
   return (
     <ThemeProvider theme={defaultTheme}>
       <CssBaseline />
-      
-      <main>
-        {/* Pass cardsData as a prop to the first PhotoCards component */}
-        <PhotoCards cards={cardsData} />
+      <Grid container spacing={2} sx={{ mt: 4 }}>
+        {recipes.map((recipe) => ( 
+          <Grid item xs={12} sm={6} md={4} key={recipe.id}>
+          <Card>
+            <CardContent>
+              <Typography variant='h5' component='h2'>
+                {recipe.name}
+              </Typography>
+              <Typography color='textSecondary'>
+                Cuisine: {recipe.cuisine_name}
+              </Typography>
+              <Typography variant='body2' component='p'>
+                Ingredients: {recipe.ingredients}
+              </Typography>
+              <Typography variant='body2' component='p'>
+              <Rating name="read-only" value={parseFloat(recipe.rating)} readOnly />
 
-        <main>
-          {/* Pass cardsData as a prop to the second PhotoCards component */}
+              </Typography>
+              <Button 
+              variant="outlined" endIcon={<DoubleArrowIcon />}>
+          View
+          </Button>
+              
+            </CardContent>
+          </Card>
 
-        </main>
+          </Grid>
 
-      </main>
 
+        ))}
+      </Grid>
     </ThemeProvider>
   );
 }
