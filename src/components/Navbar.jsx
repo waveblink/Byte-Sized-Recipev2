@@ -29,6 +29,7 @@
             <Button component={Link} to="/cookbook" variant="contained">Cookbook</Button>
             <Button component={Link} to="/generate" variant="contained">Generate</Button>
             <Button component={Link} to="/register" variant="contained">Register</Button>
+            <Button component={Link} to="/chatbot" variant="contained">ChatBot</Button>
 
         </Toolbar>
         </AppBar>
