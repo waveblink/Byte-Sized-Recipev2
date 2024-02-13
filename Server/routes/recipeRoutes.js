@@ -50,11 +50,13 @@ router.post('/chatbot', async (req, res) => {
     const cuisine = req.body.cuisine;
     console.log("Chatbot endpoint hit", req.body);
 
+    const systemMessageContent = `You are a chatbot specialized in ${cuisine} cuisine. Method: Focus on [Ingredient details, Cooking techniques, Regional specialties] Structure: [Ingredient exploration] + [Technique refinement] + [Regional emphasis] + [Measurements in grams only] Goal: Elevate [Culinary knowledge], [Recipe authenticity] .`;
+
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4-turbo-preview", // Adjust according to your subscription and the model's availability
             messages: [
-                { role: "system", content: "You are a chatbot specialized in Italian cuisine." },
+                { role: "system", content: systemMessageContent },
                 { role: "user", content: userQuery }
             ],
         }, {

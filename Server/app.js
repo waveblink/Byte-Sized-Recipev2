@@ -4,6 +4,7 @@ import path from "path";
 import dotenv from "dotenv";
 import recipeRoutes from './routes/recipeRoutes.js'; // Ensure this path is correct
 import { fileURLToPath } from 'url';
+import authRoutes from './routes/authRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
