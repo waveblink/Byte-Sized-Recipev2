@@ -28,6 +28,9 @@ app.use((req, res, next) => {
 // Use the recipe routes for anything under '/api'
 app.use('/api', recipeRoutes);
 
+app.use('/api', authRoutes);
+
+
 // A simple test route can be kept here after the essential middleware
 app.post('/api/test', (req, res) => {
   res.send('Test route is working');

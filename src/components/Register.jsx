@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React  from 'react';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -12,8 +12,11 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useScrollTrigger } from '@mui/material';
+import { useState } from 'react';
 
-function Copyright(props) {
+
+function Copyright(props) { 
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
@@ -28,17 +31,65 @@ function Copyright(props) {
 
 // TODO remove, this demo shouldn't need to reset the theme.
 
+
+  
 const defaultTheme = createTheme();
 
 export default function Register() {
-  const handleSubmit = (event) => {
+
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+
+
+  });
+
+
+  const handleSubmit =  async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    try {
+      const response = await fetch('http://localhost:4000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (response.ok) {
+        const responseBody = await response.json();
+        console.log(responseBody);
+        alert('Account added successfully!');
+        
+        // Reset the form data here, within the scope of `handleSubmit` and after a successful response
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          password: "",
+
+          // Make sure to reset the rating as well, if it's part of formData
+        }); 
+      } else {
+        alert('Failed to register account.');
+      }
+    } catch (error) {
+      console.error('Error registering account:', error);
+      alert('Error registering account.');
+    }
   };
+
+  const handleChange = (event) => {
+    const {name, value} = event.target;
+    setFormData(prevFormData => ({
+      ...prevFormData,
+      [name]: value
+    }));
+  }
+
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -69,6 +120,8 @@ export default function Register() {
                   id="firstName"
                   label="First Name"
                   autoFocus
+                  value={formData.firstName}
+                  onChange={handleChange}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -78,7 +131,8 @@ export default function Register() {
                   id="lastName"
                   label="Last Name"
                   name="lastName"
-                  autoComplete="family-name"
+                  autoComplete="family-name"value={formData.lastName}
+                  onChange={handleChange}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -89,6 +143,8 @@ export default function Register() {
                   label="Email Address"
                   name="email"
                   autoComplete="email"
+                  value={formData.email}
+                  onChange={handleChange}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -100,6 +156,8 @@ export default function Register() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  value={formData.password}
+                  onChange={handleChange}
                 />
               </Grid>
               <Grid item xs={12}>
