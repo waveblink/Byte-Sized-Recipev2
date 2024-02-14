@@ -39,4 +39,33 @@ router.post('/register', async (req, res) => {
     }
 });
 
+
+    router.post('/login', async (req, res) => {
+        // Log when the route is hit
+        console.log("Login endpoint hit", req.body);
+    
+        const { email, password } = req.body;
+    
+        try {
+            // Check if user already exists
+            const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+            if (userExists.rows.length === 0) {
+                return res.status(400).json({ message: "User not found or wrong email" });
+            }
+
+            const user = userExists.rows[0];
+
+            const isValidPassword = await bcrypt.compare(password, user.password);
+            if(!isValidPassword) {
+                return res.status(401).json({message: "Invalid Password"})
+            }
+            res.status(200).json({message: "Welcome back!"})
+
+        } catch (error) {
+            console.error("Error Loging In:", error);
+            res.status(500).json({ message: 'Error Logging user' });
+        }
+    
+});
+
 export default router;

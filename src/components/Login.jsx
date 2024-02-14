@@ -12,6 +12,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useState } from 'react';
+
 
 const defaultTheme = createTheme();
 //Will need to caryry login name props so that it shows up on the home page.
@@ -33,15 +35,55 @@ function Copyright(props) {
 // TODO remove, this demo shouldn't need to reset the theme.
 
 export default function Login() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
 
+  const [formData, setFormData] = useState({
+
+    email: "",
+    password: "",
+
+
+  });
+
+const handleSubmit =  async (event) => {
+  event.preventDefault();
+  const data = new FormData(event.currentTarget);
+  try {
+    const response = await fetch('http://localhost:4000/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+    
+    if (response.ok) {
+      const responseBody = await response.json();
+      console.log(responseBody);
+      alert('Welcome Back!');
+      
+      // Reset the form data here, within the scope of `handleSubmit` and after a successful response
+      setFormData({
+
+        email: "",
+        password: "",
+
+        // Make sure to reset the rating as well, if it's part of formData
+      }); 
+    } else {
+      alert('Failed to Login');
+    }
+  } catch (error) {
+    console.error('Error Logging in:', error);
+    alert('Error Logging in.');
+  }
+};
+const handleChange = (event) => {
+  const {name, value} = event.target;
+  setFormData(prevFormData => ({
+    ...prevFormData,
+    [name]: value
+  }));
+}
   return (
     <ThemeProvider theme={defaultTheme}>
       <Container component="main" maxWidth="xs">
@@ -70,6 +112,9 @@ export default function Login() {
               name="email"
               autoComplete="email"
               autoFocus
+              value={formData.email}
+              onChange={handleChange}
+              
             />
             <TextField
               margin="normal"
@@ -80,6 +125,8 @@ export default function Login() {
               type="password"
               id="password"
               autoComplete="current-password"
+              value={formData.password}
+              onChange={handleChange}
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
