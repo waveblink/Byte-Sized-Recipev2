@@ -15,6 +15,6 @@
 3:Make ChatBot jsx file ✅
 
 2/13/24
-1:Finish ability to register
-2: Finish Ability to Login
-3: Connect users with the recipes posted
+1:Finish ability to register ✅
+2: Finish Ability to Login ✅
+3: Connect users with the recipes posted 

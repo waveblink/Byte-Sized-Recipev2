@@ -3,9 +3,12 @@ import bcrypt from 'bcrypt';
 import pg from 'pg';
 import dotenv from 'dotenv';
 const router = express.Router();
+import jwt from 'jsonwebtoken';
+
 
 dotenv.config();
 const { Pool } = pg;
+const jwtSecret = process.env.JWT_SECRET;
 
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -40,32 +43,42 @@ router.post('/register', async (req, res) => {
 });
 
 
-    router.post('/login', async (req, res) => {
-        // Log when the route is hit
-        console.log("Login endpoint hit", req.body);
-    
-        const { email, password } = req.body;
-    
-        try {
-            // Check if user already exists
-            const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-            if (userExists.rows.length === 0) {
-                return res.status(400).json({ message: "User not found or wrong email" });
-            }
+router.post('/login', async (req, res) => {
+    console.log("Login endpoint hit", req.body);
+    const { email, password } = req.body;
 
-            const user = userExists.rows[0];
-
-            const isValidPassword = await bcrypt.compare(password, user.password);
-            if(!isValidPassword) {
-                return res.status(401).json({message: "Invalid Password"})
-            }
-            res.status(200).json({message: "Welcome back!"})
-
-        } catch (error) {
-            console.error("Error Loging In:", error);
-            res.status(500).json({ message: 'Error Logging user' });
+    try {
+        // Check if user exists
+        const userQuery = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        if (userQuery.rows.length === 0) {
+            return res.status(400).json({ message: "User not found or wrong email" });
         }
-    
+
+        const user = userQuery.rows[0];
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+            return res.status(401).json({ message: "Invalid Password" });
+        }
+        
+        const userData = { ...user };
+        delete userData.password;
+
+        // If password is valid, generate a JWT token
+        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1d' });
+        
+        res.cookie('token', token, {
+        ttpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        
+});
+res.status(200).json({ message: "Welcome back!", user: userData, token });
+
+    } catch (error) {
+        console.error("Error Logging In:", error);
+        res.status(500).json({ message: 'Error logging in' });
+    }
 });
 
 export default router;

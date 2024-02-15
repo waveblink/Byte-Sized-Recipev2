@@ -13,6 +13,9 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
+import { useUser } from './UserContext'; 
+import { useNavigate } from 'react-router-dom';
+
 
 
 const defaultTheme = createTheme();
@@ -36,6 +39,11 @@ function Copyright(props) {
 
 export default function Login() {
 
+  const { setUser } = useUser();
+  const navigate = useNavigate();
+
+
+
   const [formData, setFormData] = useState({
 
     email: "",
@@ -55,11 +63,13 @@ const handleSubmit =  async (event) => {
       },
       body: JSON.stringify(formData),
     });
-    
     if (response.ok) {
       const responseBody = await response.json();
-      console.log(responseBody);
-      alert('Welcome Back!');
+      console.log('Login successful:', responseBody);
+      setUser(responseBody.user); // Make sure responseBody.user has the correct structure
+      console.log('User set in global state:', responseBody.user);
+      navigate('/');
+    
       
       // Reset the form data here, within the scope of `handleSubmit` and after a successful response
       setFormData({

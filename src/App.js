@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Album from './components/Album.jsx';
@@ -9,12 +9,14 @@ import Footer from './components/Footer.jsx'; // Assuming Footer is meant to be 
 import Register from './components/Register.jsx';
 import Login from './components/Login.jsx';
 import ChatBot from './components/ChatBot.jsx';
+import { UserProvider } from './components/UserContext.jsx';
 
 
 function App() {
   return (
     <Router>
       <div className="App">
+      <UserProvider>
         <Navbar />
         <Routes>
           <Route path="/" element={<Album />} />
@@ -27,6 +29,7 @@ function App() {
           {/* Add more routes as needed */}
         </Routes>
         <Footer />
+        </UserProvider>
       </div>
     </Router>
   );

@@ -62,6 +62,9 @@ export default function Cookbook() {
           <Grid item xs={12} sm={6} md={4} key={recipe.id}>
           <Card>
             <CardContent>
+            <Typography variant='h5' component='h2'>
+                {recipe.users_user_id}
+              </Typography>
               <Typography variant='h5' component='h2'>
                 {recipe.name}
               </Typography>
