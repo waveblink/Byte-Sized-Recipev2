@@ -42,6 +42,16 @@ router.post('/register', async (req, res) => {
     }
 });
 
+// Assuming pool is already configured as shown in your initial code
+async function getUserById(userId) {
+    const queryResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+    if (queryResult.rows.length > 0) {
+        return queryResult.rows[0]; // Returns the first user matching the ID
+    } else {
+        return null; // No user found
+    }
+}
+
 
 router.post('/login', async (req, res) => {
     console.log("Login endpoint hit", req.body);
@@ -87,28 +97,31 @@ res.status(200).json({ message: "Welcome back!", user: userData, token });
     }
 });
 
-    router.get('/validate', (req, res) => {
-    const token = req.cookies.token; 
-    console.log('Cookies:', req.cookies); 
-
+router.get('/validate', async (req, res) => {
+    const token = req.cookies.token;
+    console.log("cookies:", token)
     if (!token) {
         return res.status(401).json({ message: 'No token provided' });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        res.status(200).json({ message: 'Session is valid', user: { id: decoded.userId } });
-    } catch (error) {
-        if (error.name === "TokenExpiredError") {
-            res.status(401).json({ message: 'Token expired' });
-        } else if (error.name === "JsonWebTokenError") {
-            res.status(401).json({ message: 'Invalid token' });
-        } else {
-            // For unexpected errors
-            res.status(500).json({ message: 'Failed to validate token' });
+
+        // Fetch user details using the ID from the decoded token
+        const user = await getUserById(decoded.userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+
+        // Prepare user details for response, excluding sensitive information like passwords
+        const { password, ...userDetails } = user;
+        res.status(200).json({ message: 'Session is valid', user: userDetails });
+    } catch (error) {
+        console.error("Validation error:", error.message);
+        res.status(401).json({ message: 'Session validation failed' });
     }
 });
+
 router.post('/logout', (req, res) => {
     res.cookie('token', '', { httpOnly: true, path: '/', expires: new Date(0) });
     res.status(200).json({ message: 'Logged out successfully' });

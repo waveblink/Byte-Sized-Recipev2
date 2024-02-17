@@ -10,37 +10,16 @@ import Register from './components/Register.jsx';
 import Login from './components/Login.jsx';
 import ChatBot from './components/ChatBot.jsx';
 import { UserProvider } from './components/UserContext.jsx';
-
+import ValidateSession from './components/ValidateSession.jsx';
 
 function App() {
 
-
-  useEffect(() => {
-    async function validateSession() {
-      try {
-        const response = await fetch('http://localhost:4000/api/validate', {
-          method: 'GET',
-          credentials: 'include', 
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log(data);
-      } catch (error) {
-        console.error('Error:', error);
-      }
-    }
-
-    validateSession(); 
-  }, []);
 
   return (
     <Router>
       <div className="App">
       <UserProvider>
+      <ValidateSession />
         <Navbar />
         <Routes>
           <Route path="/" element={<Album />} />
