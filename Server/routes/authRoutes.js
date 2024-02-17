@@ -1,9 +1,9 @@
+import jwt from 'jsonwebtoken';
 import express from 'express';
 import bcrypt from 'bcrypt';
 import pg from 'pg';
 import dotenv from 'dotenv';
 const router = express.Router();
-import jwt from 'jsonwebtoken';
 
 
 dotenv.config();
@@ -59,26 +59,60 @@ router.post('/login', async (req, res) => {
         if (!isValidPassword) {
             return res.status(401).json({ message: "Invalid Password" });
         }
-        
         const userData = { ...user };
         delete userData.password;
-
         // If password is valid, generate a JWT token
-        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1d' });
-        
-        res.cookie('token', token, {
-        ttpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
-        
-});
+        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1 day' });
+        res.cookie('token', token, { 
+            httpOnly: true, 
+            path: '/', 
+            maxAge: 24 * 60 * 60 * 1000, 
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Lax'
+          });
+          
+ 
 res.status(200).json({ message: "Welcome back!", user: userData, token });
-
+// res.cookie('testCookie', 'testValue', { 
+//     httpOnly: true, 
+//     path: '/', 
+//     maxAge: 24 * 60 * 60 * 1000, // 24 hours
+//     secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+//     sameSite: 'Lax' // Set SameSite attribute to 'Lax'
+// });
+// res.status(200).json({ message: "Test cookie set" });
     } catch (error) {
         console.error("Error Logging In:", error);
         res.status(500).json({ message: 'Error logging in' });
     }
 });
+
+    router.get('/validate', (req, res) => {
+    const token = req.cookies.token; 
+    console.log('Cookies:', req.cookies); 
+
+    if (!token) {
+        return res.status(401).json({ message: 'No token provided' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        res.status(200).json({ message: 'Session is valid', user: { id: decoded.userId } });
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            res.status(401).json({ message: 'Token expired' });
+        } else if (error.name === "JsonWebTokenError") {
+            res.status(401).json({ message: 'Invalid token' });
+        } else {
+            // For unexpected errors
+            res.status(500).json({ message: 'Failed to validate token' });
+        }
+    }
+});
+router.post('/logout', (req, res) => {
+    res.cookie('token', '', { httpOnly: true, path: '/', expires: new Date(0) });
+    res.status(200).json({ message: 'Logged out successfully' });
+});
+
 
 export default router;

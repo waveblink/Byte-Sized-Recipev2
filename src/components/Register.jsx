@@ -12,7 +12,6 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { useScrollTrigger } from '@mui/material';
 import { useState } from 'react';
 
 
@@ -49,7 +48,6 @@ export default function Register() {
 
   const handleSubmit =  async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
     try {
       const response = await fetch('http://localhost:4000/api/register', {
         method: 'POST',

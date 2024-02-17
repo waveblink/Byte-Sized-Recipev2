@@ -41,7 +41,8 @@ export default function Login() {
 
   const { setUser } = useUser();
   const navigate = useNavigate();
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
 
   const [formData, setFormData] = useState({
@@ -52,41 +53,39 @@ export default function Login() {
 
   });
 
-const handleSubmit =  async (event) => {
-  event.preventDefault();
-  const data = new FormData(event.currentTarget);
-  try {
-    const response = await fetch('http://localhost:4000/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
-    if (response.ok) {
-      const responseBody = await response.json();
-      console.log('Login successful:', responseBody);
-      setUser(responseBody.user); // Make sure responseBody.user has the correct structure
-      console.log('User set in global state:', responseBody.user);
-      navigate('/');
-    
-      
-      // Reset the form data here, within the scope of `handleSubmit` and after a successful response
-      setFormData({
-
-        email: "",
-        password: "",
-
-        // Make sure to reset the rating as well, if it's part of formData
-      }); 
-    } else {
-      alert('Failed to Login');
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setError('');
+    // FormData approach is removed, using state (formData) directly
+    try {
+      const response = await fetch('http://localhost:4000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+        credentials: 'include', // Ensure cookies are sent with the request
+      });
+  
+      if (response.ok) {
+        const responseBody = await response.json();
+        console.log('Login successful:', responseBody);
+        setUser(responseBody.user); // Adjust according to your actual user object structure
+        setLoading(false);
+        navigate('/'); // Redirect to the homepage or dashboard
+      } else {
+        // Handle HTTP errors, such as 401 Unauthorized
+        alert('Failed to login. Please check your credentials.');
+      }
+    } catch (error) {
+      console.error('Error Logging in:', error);
+      setLoading(false);
+      setError('An error occurred. Please try again.');
+      alert('Error Logging in. Please try again later.');
     }
-  } catch (error) {
-    console.error('Error Logging in:', error);
-    alert('Error Logging in.');
-  }
-};
+  };
+  
 const handleChange = (event) => {
   const {name, value} = event.target;
   setFormData(prevFormData => ({
@@ -147,8 +146,9 @@ const handleChange = (event) => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </Button>
             <Grid container>
               <Grid item xs>

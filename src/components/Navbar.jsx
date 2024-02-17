@@ -14,9 +14,7 @@
         console.log('User in Navbar:', user);
 
     
-        const handleLogout = () => {
-            setUser(null); // Clear the user from context, effectively logging out
-        };
+    
 
 
     return (
@@ -40,7 +38,7 @@
                 
                 <>
                     <Button color = "inherit">{user.firstname}</Button>
-                    <Button color="inherit" onClick={handleLogout}>Logout</Button>
+                    <Button color="inherit">Logout</Button>
                 </>
                 ) : (
                     <>
