@@ -6,13 +6,15 @@ const { Pool } = pg;
 dotenv.config();
 
 // Initialize a connection pool
-const pool = new Pool({
+export const pool = new Pool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT || 5432,
+  connectionString: process.env.DATABASE_URL,
 });
+
 
 // Async function to query the database
 export const query = async (text, params) => {

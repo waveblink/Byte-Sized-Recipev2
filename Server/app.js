@@ -6,6 +6,8 @@ import recipeRoutes from './routes/recipeRoutes.js';
 import { fileURLToPath } from 'url';
 import authRoutes from './routes/authRoutes.js';
 import cookieParser from 'cookie-parser';
+import authenticateToken from './middleware/authenticateToken.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,7 +17,7 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: 'http://localhost:3000',  
   credentials: true, 
 };
 
@@ -32,6 +34,8 @@ app.use((req, res, next) => {
 app.use('/api', recipeRoutes);
 
 app.use('/api', authRoutes);
+
+app.use(authenticateToken);
 
 app.get('/validate', (req, res) => {
   res.status(200).json({ message: 'Validation route is working' });

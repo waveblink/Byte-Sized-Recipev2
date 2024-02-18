@@ -13,11 +13,12 @@ const jwtSecret = process.env.JWT_SECRET;
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
+
 router.post('/register', async (req, res) => {
     // Log when the route is hit
     console.log("Register endpoint hit", req.body);
 
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, username } = req.body;
 
     try {
         // Check if user already exists
@@ -25,13 +26,17 @@ router.post('/register', async (req, res) => {
         if (userExists.rows.length > 0) {
             return res.status(400).json({ message: "User already exists with that email." });
         }
+        const usernameExists = await pool.query("SELECT * FROM users WHERE email = $1", [username]);
+        if (usernameExists.rows.length > 0) {
+            return res.status(400).json({ message: "User already exists with that username." });
+        }
 
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Insert new user into database
-        const newUser = await pool.query("INSERT INTO users (firstName, lastName, email, password) VALUES ($1, $2, $3, $4) RETURNING *",
-            [firstName, lastName, email, hashedPassword]
+        const newUser = await pool.query("INSERT INTO users (firstName, lastName, email, password, username) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            [firstName, lastName, email, hashedPassword, username]
         );
 
         // Successfully created new user
@@ -129,3 +134,4 @@ router.post('/logout', (req, res) => {
 
 
 export default router;
+export const query = (text, params) => pool.query(text, params);

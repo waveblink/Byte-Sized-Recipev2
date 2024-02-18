@@ -1,11 +1,13 @@
 import express from 'express';
-import { query } from '../db/db.js'; // Adjust the path as necessary
+import { query, pool } from '../db/db.js'; // Adjust the path as necessary
 import axios from "axios";
+import authenticateToken from '../middleware/authenticateToken.js';
 const router = express.Router();
 
 // Define a route for submitting recipes
-router.post('/submit-recipe', async (req, res) => {
+router.post('/submit-recipe', authenticateToken, async (req, res) => {
     const { name, cuisine, mealType, ingredients, instructions, rating } = req.body;
+    const userId= req.user.id;
     console.log(req.body);
     try {
         const cuisineResult = await query('SELECT id FROM cuisines WHERE name = $1', [cuisine]);
@@ -16,8 +18,8 @@ router.post('/submit-recipe', async (req, res) => {
         }
 
         const result = await query(
-            'INSERT INTO recipes (name, cuisine_id, meal_type, ingredients, instructions, rating) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
-            [name, cuisineId, mealType, ingredients, instructions, rating]
+            'INSERT INTO recipes (name, cuisine_id, meal_type, ingredients, instructions, rating, user_Id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [name, cuisineId, mealType, ingredients, instructions, rating, userId]
         );
 
         res.status(201).json(result.rows[0]);
@@ -28,11 +30,24 @@ router.post('/submit-recipe', async (req, res) => {
     }
 });
 
+router.get('/recipes/user/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM recipes WHERE user_id = $1', [userId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching recipes by user:', error);
+        res.status(500).json({ message: 'Failed to fetch recipes' });
+    }
+});
+
+
 router.get('/recipes/latest', async (req, res) =>{
     const limit = parseInt(req.query.limit) || 3;
     try {
-        const result = await query(`SELECT recipes.*, cuisines.name AS cuisine_name FROM recipes
+        const result = await query(`SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username FROM recipes
         JOIN cuisines ON recipes.cuisine_id = cuisines.id
+        JOIN users ON recipes.user_id = users.id 
         ORDER BY recipes.created_at DESC
         LIMIT $1`, [limit]);
         res.json(result.rows);
@@ -105,9 +120,16 @@ router.get('/recipes', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     try {
-        const result = await query('SELECT recipes.*, cuisines.name AS cuisine_name FROM recipes JOIN cuisines ON recipes.cuisine_id = cuisines.id LIMIT $1 OFFSET $2',
-        [limit, offset]
-        );
+        const result = await query(
+    `SELECT recipes.*, 
+           cuisines.name AS cuisine_name, 
+           users.username AS username 
+    FROM recipes 
+    JOIN cuisines ON recipes.cuisine_id = cuisines.id 
+    JOIN users ON recipes.user_id = users.id 
+    ORDER BY recipes.created_at DESC 
+    LIMIT $1 OFFSET $2`
+, [limit, offset]);
 
         res.json(result.rows);
     } catch (err) {
