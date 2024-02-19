@@ -65,7 +65,7 @@ router.post('/chatbot', async (req, res) => {
     const cuisine = req.body.cuisine;
     console.log("Chatbot endpoint hit", req.body);
 
-    const systemMessageContent = `You are a chatbot specialized in ${cuisine} cuisine. Method: Focus on [Ingredient details, Cooking techniques, Regional specialties] Structure: [Ingredient exploration] + [Technique refinement] + [Regional emphasis] + [Measurements in grams only] Goal: Elevate [Culinary knowledge], [Recipe authenticity] .`;
+    const systemMessageContent = `You are a chatbot specialized in ${cuisine} cuisine. Method: Focus on [Ingredient details, Cooking techniques, Regional specialties] Structure: [Ingredient exploration] + [Technique refinement] + [Regional emphasis] + [Measurements in grams only] Goal: Elevate [Culinary knowledge], [Recipe authenticity] + [give the macronutrient breakdown, in the form of Calories: Protein: Carbs: Fats:].`;
 
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -96,6 +96,26 @@ router.post('/chatbot', async (req, res) => {
     } catch (error) {
         console.error('Error calling OpenAI API:', error);
         res.status(500).send('Failed to fetch response from OpenAI');
+    }
+});
+
+router.get('/recipes/:id', async (req,res) =>{
+    const recipeId = req.params.id;
+
+    try {
+        const result = await pool.query(`SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username 
+        FROM recipes 
+        JOIN cuisines ON recipes.cuisine_id = cuisines.id
+        JOIN users ON recipes.user_id = users.id
+        WHERE recipes.id = $1`, [recipeId]);
+
+        if (result.rows.length === 0){
+            return res.status(404).json({message: "Recipe not found"});
+        }
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error getting recipe:', error);
+        res.status(500).json({ message: 'An error occurred while getting the recipe.' });
     }
 });
 
