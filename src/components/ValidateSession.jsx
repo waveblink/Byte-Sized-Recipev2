@@ -22,9 +22,9 @@ const ValidateSession = () => {
         }
 
         validateSession();
-    }, [setUser]); // No need to include setUser in dependency array
+    }, [setUser]); 
 
-    return null; // This component doesn't need to render anything
+    return null; 
 };
 
 export default ValidateSession;

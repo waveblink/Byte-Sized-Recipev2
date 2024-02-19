@@ -11,3 +11,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+/* Apply Playfair Display for headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', serif;
+}
+
+/* Apply Roboto for body text */
+body, p, li, input, button, textarea {
+  font-family: 'Roboto', sans-serif;
+}

@@ -14,6 +14,23 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
 
+const theme = createTheme({
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Playfair Display',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+    ].join(','),
+    h1: {
+      fontFamily: 'Playfair Display, serif',
+    },
+    body1: {
+      fontFamily: 'Roboto, sans-serif',
+    },
+  },
+});
 
 function Copyright(props) { 
   return (
@@ -68,6 +85,7 @@ export default function Register() {
           lastName: "",
           email: "",
           password: "",
+          username: "",
 
           // Make sure to reset the rating as well, if it's part of formData
         }); 
@@ -90,7 +108,7 @@ export default function Register() {
 
 
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
@@ -155,6 +173,18 @@ export default function Register() {
                   id="password"
                   autoComplete="new-password"
                   value={formData.password}
+                  onChange={handleChange}
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  id="username"
+                  label="username"
+                  name="username"
+                  autoComplete="username"
+                  value={formData.username}
                   onChange={handleChange}
                 />
               </Grid>

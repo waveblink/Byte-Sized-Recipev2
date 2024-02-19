@@ -9,8 +9,11 @@ import Footer from './components/Footer.jsx';
 import Register from './components/Register.jsx';
 import Login from './components/Login.jsx';
 import ChatBot from './components/ChatBot.jsx';
+import RecipeView from './components/RecipeView.jsx';
 import { UserProvider } from './components/UserContext.jsx';
 import ValidateSession from './components/ValidateSession.jsx';
+
+
 
 function App() {
 
@@ -28,6 +31,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/chatbot" element={<ChatBot />} />
+          <Route path="/recipe/:id" element={<RecipeView />} />
         </Routes>
         <Footer />
         </UserProvider>

@@ -18,7 +18,23 @@ import { useNavigate } from 'react-router-dom';
 
 
 
-const defaultTheme = createTheme();
+const theme = createTheme({
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Playfair Display',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+    ].join(','),
+    h1: {
+      fontFamily: 'Playfair Display, serif',
+    },
+    body1: {
+      fontFamily: 'Roboto, sans-serif',
+    },
+  },
+});
 //Will need to caryry login name props so that it shows up on the home page.
 //post request so that when you are logged in sends you to home screen
 
@@ -52,6 +68,8 @@ export default function Login() {
 
 
   });
+
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -94,7 +112,7 @@ const handleChange = (event) => {
   }));
 }
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box
@@ -157,7 +175,7 @@ const handleChange = (event) => {
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="/register" variant="body2">
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>

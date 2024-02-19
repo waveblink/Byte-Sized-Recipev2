@@ -4,6 +4,10 @@
     import { Link } from 'react-router-dom';
     import HomeIcon from '@mui/icons-material/Home';
     import { useUser } from './UserContext.jsx';
+    import { useNavigate } from 'react-router-dom';
+    import { useState } from 'react';
+
+
 
 
         
@@ -12,13 +16,63 @@
     const Navbar = () => {
         const { user, setUser } = useUser();
         console.log('User in Navbar:', user);
+        const navigate = useNavigate();
+        const [loading, setLoading] = useState(false);
+        const [error, setError] = useState('');
+
+
 
     
-    
+        const logOut = async () => {
+            setLoading(true);
+            setError('');
 
+            try {
+              const response = await fetch('http://localhost:4000/api/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+
+              });
+              if (response.ok) {
+                console.log('Logout successful:');
+                setUser(null); // Adjust according to your actual user object structure
+                navigate('/'); // Redirect to the homepage or dashboard
+              } else {
+                // Handle HTTP errors, such as 401 Unauthorized
+                console.error('Failed to logout');
+                alert('Failed to logout.');
+              }
+            } catch (error) {
+              console.error('Error logging out:', error);
+              setError('An error occurred. Please try again.');
+              alert('Error logging out. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+          };
+
+          const theme = createTheme({
+            typography: {
+              fontFamily: [
+                'Roboto',
+                'Playfair Display',
+                '"Helvetica Neue"',
+                'Arial',
+                'sans-serif',
+              ].join(','),
+              h1: {
+                fontFamily: 'Playfair Display, serif',
+              },
+              body1: {
+                fontFamily: 'Roboto, sans-serif',
+              },
+            },
+          });
 
     return (
-
+<ThemeProvider theme={theme}>
         <AppBar position="static">
         <Toolbar>
             <IconButton
@@ -38,7 +92,8 @@
                 
                 <>
                     <Button color = "inherit">{user.firstname}</Button>
-                    <Button color="inherit">Logout</Button>
+                    <Button color="inherit"
+                    onClick={logOut}>Logout</Button>
                 </>
                 ) : (
                     <>
@@ -52,6 +107,7 @@
 
         </Toolbar>
         </AppBar>
+        </ThemeProvider>
         
     );
    

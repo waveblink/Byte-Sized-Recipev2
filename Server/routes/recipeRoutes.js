@@ -158,5 +158,67 @@ router.get('/recipes', async (req, res) => {
         res.status(500).json({ message: 'An error occurred while fetching the recipe.' });
     }
 });
+
+router.post('/recipes/:id/comments', authenticateToken, async (req, res) => {
+    const recipeId = req.params.id; // Make sure this is correctly extracting the 'id'
+    const userId = req.user.id;
+    const { comment } = req.body;
+    
+    try {
+        const result = await pool.query(
+            `INSERT INTO comments (recipe_id, user_id, comment) VALUES ($1, $2, $3) RETURNING *`,
+            [recipeId, userId, comment]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error posting comment:', error);
+        res.status(500).json({ message: 'Failed to post comment' });
+    }
+});
+
+
+router.get('/recipes/:id/comments', async (req, res) => {
+    const {id: recipeId} = req.params;
+    
+
+    try {
+        const result = await pool.query(
+        `SELECT comments. *, users.username FROM comments JOIN users ON comments.user_id = users.id WHERE recipe_id = $1 ORDER BY created_at DESC`,
+        [recipeId]
+);
+res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'Failed to fetch comments' });
+        
+    }
+})
+
+router.delete('/recipes/:recipeId/comments/:commentId', authenticateToken, async (req, res) => {
+    const { recipeId, commentId } = req.params;
+    const userId = req.user.id; // Assuming you have a middleware to set req.user based on the authenticated user
+
+    try {
+        // Optional: Check if the comment belongs to the user attempting to delete it
+        const ownershipResult = await pool.query('SELECT * FROM comments WHERE id = $1 AND user_id = $2', [commentId, userId]);
+        if (ownershipResult.rows.length === 0) {
+            return res.status(403).json({ message: 'You do not have permission to delete this comment.' });
+        }
+
+        // Proceed to delete the comment
+        const deleteResult = await pool.query('DELETE FROM comments WHERE id = $1 RETURNING *', [commentId]);
+        
+        if (deleteResult.rows.length > 0) {
+            res.json({ message: 'Comment deleted successfully', deletedComment: deleteResult.rows[0] });
+        } else {
+            res.status(404).json({ message: 'Comment not found' });
+        }
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        res.status(500).json({ message: 'An error occurred while deleting the comment.' });
+    }
+});
+
+
 // Export the router
 export default router;

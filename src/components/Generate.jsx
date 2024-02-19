@@ -2,9 +2,26 @@ import React, { useState } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, Container, TextField, Button, Typography, Box , InputLabel, Select, MenuItem, FormControl, Rating} from '@mui/material';
 import Footer from './Footer';
 import HoverRating from './Hover';
+// import theme from '../theme.js'
 
 
-
+const theme = createTheme({
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Playfair Display',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+    ].join(','),
+    h1: {
+      fontFamily: 'Playfair Display, serif',
+    },
+    body1: {
+      fontFamily: 'Roboto, sans-serif',
+    },
+  },
+});
 
 export default function Generate() {
   const [formData, setFormData] = useState({
@@ -34,8 +51,10 @@ export default function Generate() {
     try {
       const response = await fetch('http://localhost:4000/api/submit-recipe', {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
+          
         },
         body: JSON.stringify(formData),
       });
@@ -64,16 +83,15 @@ export default function Generate() {
     }
   };
 
+
   const handleRatingChange = (newRating) => {
     setFormData({ ...formData, rating: newRating });
  
   }
   
-
-  const defaultTheme = createTheme();
 //Change 
   return(
-  <ThemeProvider theme={defaultTheme}>
+  <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box
         display="flex"

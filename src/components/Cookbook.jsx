@@ -9,9 +9,37 @@ import PhotoCards from './Hero.jsx'; // Correct import
 import Cards from './Photo.jsx';
 import Footer from './Footer.jsx';
 import Navbar from './Navbar.jsx';
+import { styled } from '@mui/material/styles';
+import CardHeader from '@mui/material/CardHeader';
+import CardMedia from '@mui/material/CardMedia';
+import CardActions from '@mui/material/CardActions';
+import Collapse from '@mui/material/Collapse';
+import Avatar from '@mui/material/Avatar';
+import { red } from '@mui/material/colors';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import ShareIcon from '@mui/icons-material/Share';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Link } from 'react-router-dom';
 
-const defaultTheme = createTheme();
 
+const theme = createTheme({
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Playfair Display',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+    ].join(','),
+    h1: {
+      fontFamily: 'Playfair Display, serif',
+    },
+    body1: {
+      fontFamily: 'Roboto, sans-serif',
+    },
+  },
+});
 
 
 export default function Cookbook() {
@@ -55,33 +83,40 @@ export default function Cookbook() {
 
 
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Typography variant='h2' color={'text.secondary'} textAlign={'center'}>Cookbook</Typography>
       <Grid container spacing={2} sx={{ mt: 4 }}>
+      
         {recipes.map((recipe) => ( 
           <Grid item xs={12} sm={6} md={4} key={recipe.id}>
-          <Card>
-            <CardContent>
-            <Typography variant='h5' component='h2'>
-                {recipe.users_user_id}
-              </Typography>
-              <Typography variant='h5' component='h2'>
-                {recipe.name}
-              </Typography>
-              <Typography color='textSecondary'>
-                Cuisine: {recipe.cuisine_name}
-              </Typography>
-              <Typography variant='body2' component='p'>
-                Ingredients: {recipe.ingredients}
-              </Typography>
+          <Card alignContent={'center'} sx={{ maxWidth: 345 }}>
+            <CardHeader
+             title={recipe.name}
+             subheader={recipe.cuisine_name}
+             />
+             <CardMedia
+            component="img"
+            height="194"
+            image="/croissant.jpg" 
+            alt={recipe.name} 
+      />
+             <CardContent>
+             <Typography variant="body2" color="text.secondary">
+
+        </Typography>
+
               <Typography variant='body2' component='p'>
               <Rating name="read-only" value={parseFloat(recipe.rating)} readOnly />
 
               </Typography>
               <Button 
-              variant="outlined" endIcon={<DoubleArrowIcon />}>
-          View
-          </Button>
+              variant="outlined" 
+              component={Link} 
+              to={`/recipe/${recipe.id}`} // Use template literals to dynamically set the URL
+              endIcon={<DoubleArrowIcon />}>
+                View
+              </Button>
               <IconButton 
               onClick={()=> deleteRecipe(recipe.id)}
               aria-label="delete" size="large">

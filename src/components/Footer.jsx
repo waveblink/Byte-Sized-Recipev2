@@ -19,12 +19,29 @@ function Copyright() {
   );
 }
 
+
 // TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
+const theme = createTheme({
+  typography: {
+    fontFamily: [
+      'Roboto',
+      'Playfair Display',
+      '"Helvetica Neue"',
+      'Arial',
+      'sans-serif',
+    ].join(','),
+    h1: {
+      fontFamily: 'Playfair Display, serif',
+    },
+    body1: {
+      fontFamily: 'Roboto, sans-serif',
+    },
+  },
+});
 
 export default function StickyFooter() {
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <ThemeProvider theme={theme}>
       <Box
         sx={{
           display: 'flex',

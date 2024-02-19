@@ -4,10 +4,10 @@
 3: Connect the form to a postgres Database✅
 
 2/10/24
-1: Create request to show the recipes in the cookbook on the cookbook tab.
+1: Create request to show the recipes in the cookbook on the cookbook tab.✅
 2: Add delete function to the recipes
-3: Maybe add a comments section to the posts 
-4: Pull the most recent 3 recipes added to the Database and display them in the cards on my home page.
+3: Maybe add a comments section to the posts ✅
+4: Pull the most recent 3 recipes added to the Database and display them in the cards on my home page.✅
 
 2/12/24
 1:Research OpenAI API✅
@@ -17,4 +17,19 @@
 2/13/24
 1:Finish ability to register ✅
 2: Finish Ability to Login ✅
-3: Connect users with the recipes posted 
+3: Connect users with the recipes posted ✅
+
+2/18/24
+1: Create view page ✅
+2: Add comments sections ✅
+3: Create sorting feature based on cuisine in cookbook
+
+2/19/24
+1: Add delete confirmation like in the comment section to recipes
+2: UI work, improve home page
+3: Fix navbar
+4: Choose colors
+5: Add logout confirmation
+
+
+
