@@ -33,6 +33,9 @@ app.use((req, res, next) => {
 
 app.use('/api', recipeRoutes);
 
+app.use('/api/recipes', recipeRoutes);
+
+
 app.use('/api', authRoutes);
 
 app.use(authenticateToken);

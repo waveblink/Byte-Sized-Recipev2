@@ -46,6 +46,12 @@ export default function Cookbook() {
 
   const [recipes, setRecipes] = useState([]);
   const [sortBy, setSortBy] = useState('');
+  const [mealTypes, setMealTypes] = useState([]);
+  const [cuisines, setCuisines] = useState([])
+  const [sortCategory, setSortCategory] = useState('');
+  const [selectedOption, setSelectedOption] = useState('');
+  const [sortingOptions, setSortingOptions] = useState([]); // Unified state for both cuisines and meal types
+  const [options, setOptions] = useState([])
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -60,6 +66,8 @@ export default function Cookbook() {
 
     fetchRecipes();
   }, []);
+
+  
 
   const deleteRecipe = async (recipeId) => {
     try {
@@ -82,41 +90,123 @@ export default function Cookbook() {
     }
   }
   
-  const handleChange = (event) => {
-    setSortBy(event.target.value);
-    fetchSortedRecipes(event.target.value);
+  useEffect(() => {
+    // Fetch options based on sortCategory
+    const fetchOptions = async () => {
+      let url = `http://localhost:4000/api/recipes/${sortCategory === 'cuisine' ? 'cuisines' : 'mealTypes'}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Failed to fetch options');
+        const data = await response.json();
+        setOptions(data); // Assuming the API returns an array of options
+      } catch (error) {
+        console.error(`Error fetching options for ${sortCategory}: `, error);
+      }
+    };
+
+    if (sortCategory) {
+      fetchOptions();
+    } else {
+      setOptions([]); // Clear options if no sortCategory is selected
+    }
+  }, [sortCategory]);
+
+  const fetchCuisines = async () => {
+    try{
+    const response = await fetch(`http://localhost:4000/api/recipes/cuisines`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const cuisineData = await response.json();
+    const cuisineNames = cuisineData.map(cuisine => cuisine.name);
+    setCuisines(cuisineNames);
+    } catch (error) {
+    console.error('Error fetching recipes: ', error);
+  }
+  }
+
+  const fetchMealTypes = async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/api/recipes/mealTypes`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const mealTypeData = await response.json();
+      const mealTypeNames = mealTypeData.map(recipes => recipes.meal_type);
+      setMealTypes(mealTypeNames)
+    } catch (error) {
+      console.error('Error fetching cuisines:', error);
+    }
+  }
+
+  const fetchSortedRecipes = async (selectedOption) => {
+    let url = `http://localhost:4000/api/recipes`; // Default URL
+    if (sortCategory === 'cuisine') {
+      url += `/by-cuisine/${selectedOption}`;
+    } else if (sortCategory === 'mealType') {
+      url += `/by-meal-type/${selectedOption}`;
+    }
+  
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Could not fetch sorted recipes');
+      const sortedRecipes = await response.json();
+      setRecipes(sortedRecipes);
+    } catch (error) {
+      console.error('Error fetching sorted recipes:', error);
+    }
   };
 
-  const fetchSortedRecipes = async (sortBy) => {
-  const response = await fetch(`http://localhost:4000/api/recipes/sorted?sortBy=${sortBy}`);
-  if (response.ok) {
-    const fetchedRecipes = await response.json();
-    setRecipes(fetchedRecipes);
-  } else {
-    // Handle errors or display a message
-    console.error("Failed to fetch sorted recipes");
-  }
-};
+  const handleSortCategoryChange = (event) => {
+    setSortCategory(event.target.value);
+    setSelectedOption(''); // Reset selectedOption when sortCategory changes
+  };
+
+  const handleOptionChange = (event) => {
+    setSelectedOption(event.target.value);
+    // Assume fetchSortedRecipes function will use selectedOption to fetch and update recipes
+  };
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Typography variant='h2' color={'text.secondary'} textAlign={'center'}>Cookbook</Typography>
-      <Box sx={{ minWidth: 120 }}>
-  <FormControl fullWidth>
-    <InputLabel id="sort-by-select-label">Sort By</InputLabel>
-    <Select
-      labelId="sort-by-select-label"
-      id="sort-by-select"
-      value={sortBy}
-      label="Sort By"
-      onChange={handleChange}
-    >
-      <MenuItem value="cuisine">Cuisine</MenuItem>
-      <MenuItem value="mealType">Meal Type</MenuItem>
-    </Select>
-  </FormControl>
-</Box>
+    <CssBaseline />
+    <Typography variant='h2' color={'text.secondary'} textAlign={'center'}>Cookbook</Typography>
+    <Box sx={{ minWidth: 120 }}>
+      <FormControl fullWidth>
+        <InputLabel id="sort-category-select-label">Sort By</InputLabel>
+        <Select
+          labelId="sort-category-select-label"
+          id="sort-category-select"
+          value={sortCategory}
+          label="Sort By"
+          onChange={handleSortCategoryChange}
+        >
+          <MenuItem value="cuisine">Cuisine</MenuItem>
+          <MenuItem value="mealType">Meal Type</MenuItem>
+        </Select>
+      </FormControl>
+      
+      {/* Dynamically generated Select component for sorting options */}
+      {sortCategory && (
+        <FormControl fullWidth variant="outlined" margin="normal">
+          <InputLabel id={`${sortCategory}-label`}>{sortCategory}</InputLabel>
+          <Select
+            labelId={`${sortCategory}-label`}
+            id={sortCategory}
+            value={selectedOption}
+            onChange={handleOptionChange}
+            label={sortCategory.charAt(0).toUpperCase() + sortCategory.slice(1)} // Capitalize the first letter
+          >
+            <MenuItem value="" disabled>
+              Choose a {sortCategory}
+            </MenuItem>
+            {options.map((option, index) => (
+              <MenuItem key={index} value={option.name}>{option.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+    </Box>
       <Grid container spacing={2} sx={{ mt: 4 }}>
       
         {recipes.map((recipe) => ( 

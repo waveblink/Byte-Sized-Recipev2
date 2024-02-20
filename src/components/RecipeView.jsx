@@ -79,7 +79,7 @@ return (
               ))}
             </ol>
             <Typography variant="h6" component="h2" gutterBottom align="center">
-              Meal Type: {recipe.meal_type}
+              Meal Type: {recipe.meal_type_name}
             </Typography>
             <Typography align="left"><Rating name="read-only" value={parseFloat(recipe.rating)} readOnly />
 </Typography>

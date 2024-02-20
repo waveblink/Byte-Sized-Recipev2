@@ -4,6 +4,31 @@ import axios from "axios";
 import authenticateToken from '../middleware/authenticateToken.js';
 const router = express.Router();
 
+
+router.get('/api/recipes/cuisines', async (req, res) => {
+    console.log('Fetching all cuisines...');
+    try {
+        // Query to select all cuisines from the cuisines table
+        const result = await pool.query('SELECT name FROM cuisines ORDER BY name');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error getting all cuisines:', error);
+        res.status(500).send('Server error');
+    }
+});
+
+// router.get('/api/recipes/mealTypes', async (req, res) => {
+//     console.log('Fetching all mealTypes...');
+//     try {
+//         // Query to select all cuisines from the cuisines table
+//         const result = await pool.query('SELECT meal_type FROM recipes ORDER BY name');
+//         res.json(result.rows);
+//     } catch (error) {
+//         console.error('Error getting all meal types:', error);
+//         res.status(500).send('Server error');
+//     }
+// });
+
 // Define a route for submitting recipes
 router.post('/submit-recipe', authenticateToken, async (req, res) => {
     const { name, cuisine, mealType, ingredients, instructions, rating } = req.body;
@@ -13,12 +38,19 @@ router.post('/submit-recipe', authenticateToken, async (req, res) => {
         const cuisineResult = await query('SELECT id FROM cuisines WHERE name = $1', [cuisine]);
         const cuisineId = cuisineResult.rows[0]?.id;
 
+        const mealTypeResult = await pool.query('SELECT id FROM mealtypes WHERE name = $1', [mealType]);
+        const mealTypeId = mealTypeResult.rows[0]?.id;
+
+        if (!mealTypeId) {
+            return res.status(400).json({ error: "mealTypeId not found" });
+        }
+
         if (!cuisineId) {
             return res.status(400).json({ error: "Cuisine not found" });
         }
 
         const result = await query(
-            'INSERT INTO recipes (name, cuisine_id, meal_type, ingredients, instructions, rating, user_Id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            'INSERT INTO recipes (name, cuisine_id, meal_type_id , ingredients, instructions, rating, user_Id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
             [name, cuisineId, mealType, ingredients, instructions, rating, userId]
         );
 
@@ -57,6 +89,8 @@ router.get('/recipes/latest', async (req, res) =>{
         
     }
 });
+
+
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -99,17 +133,26 @@ router.post('/chatbot', async (req, res) => {
     }
 });
 
-router.get('/recipes/:id', async (req,res) =>{
+
+
+//causing problems 
+router.get('/recipes/:id(\\d+)', async (req, res) => {
     const recipeId = req.params.id;
 
     try {
-        const result = await pool.query(`SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username 
-        FROM recipes 
-        JOIN cuisines ON recipes.cuisine_id = cuisines.id
-        JOIN users ON recipes.user_id = users.id
-        WHERE recipes.id = $1`, [recipeId]);
+        const result = await pool.query(`
+            SELECT recipes.*, 
+                   cuisines.name AS cuisine_name, 
+                   users.username AS username, 
+                   mealTypes.name AS meal_type_name
+            FROM recipes 
+            JOIN cuisines ON recipes.cuisine_id = cuisines.id
+            JOIN users ON recipes.user_id = users.id
+            JOIN mealTypes ON recipes.meal_type_id = mealTypes.id
+            WHERE recipes.id = $1
+        `, [recipeId]);
 
-        if (result.rows.length === 0){
+        if (result.rows.length === 0) {
             return res.status(404).json({message: "Recipe not found"});
         }
         res.json(result.rows[0]);
@@ -143,10 +186,12 @@ router.get('/recipes', async (req, res) => {
         const result = await query(
     `SELECT recipes.*, 
            cuisines.name AS cuisine_name, 
-           users.username AS username 
+           users.username AS username,
+           
     FROM recipes 
     JOIN cuisines ON recipes.cuisine_id = cuisines.id 
     JOIN users ON recipes.user_id = users.id 
+    
     ORDER BY recipes.created_at DESC 
     LIMIT $1 OFFSET $2`
 , [limit, offset]);
@@ -194,6 +239,7 @@ res.json(result.rows);
     }
 })
 
+
 router.delete('/recipes/:recipeId/comments/:commentId', authenticateToken, async (req, res) => {
     const { recipeId, commentId } = req.params;
     const userId = req.user.id; // Assuming you have a middleware to set req.user based on the authenticated user
@@ -219,34 +265,102 @@ router.delete('/recipes/:recipeId/comments/:commentId', authenticateToken, async
     }
 });
 
-router.get('/recipes/sorted', async (req,res) => {
-    const {sortBy} = req.query;
+router.get('/recipes/sorted', async (req, res) => {
+    const { sortBy } = req.query;
 
-    let orderByColumn;
-    switch (sortBy){
-        case 'cuisine':
-            orderByColumn = 'cuisines.name';
-            break;
-        case 'mealType': 
-            orderByColumn = 'recipes.meal_type';
-            break;
-        default:
-            orderByColumn = 'recipes.created_at';
-            break;
-    }
+    // Predefined mapping to prevent direct user input in the query
+    const validSortOptions = {
+        'cuisine': 'cuisines.name',
+        'mealType': 'recipes.meal_type',
+        'createdAt': 'recipes.created_at'
+    };
+
+    // Default to sorting by creation date if the sortBy parameter is not valid
+    const orderByColumn = validSortOptions[sortBy] || validSortOptions['createdAt'];
+
     try {
-        const result = await query(`
-            SELECT recipes.*, cuisines.name AS cuisine_name, users.username, AS username
+        const queryText = `
+            SELECT recipes.*, cuisines.name AS cuisine_name, users.username
             FROM recipes
             JOIN cuisines ON recipes.cuisine_id = cuisines.id
-            JOIN users ON recipes.user_id = user.id
-            ORDER BY ${orderByColumn} ASC
-            `);
-            res.json(result.rows);
+            JOIN users ON recipes.user_id = users.id
+            ORDER BY ${orderByColumn} ASC;
+        `;
+
+        const result = await pool.query(queryText);
+        res.json(result.rows);
     } catch (error) {
         console.error('Error fetching sorted recipes:', error);
         res.status(500).json({ message: 'An error occurred while fetching sorted recipes.' });
     }
+});
+
+
+router.get('/cuisines', async (req, res) => {
+    console.log('Fetching all cuisines...');
+    try {
+        // Directly querying the cuisines table to fetch all cuisine names
+        const result = await pool.query('SELECT name FROM cuisines ORDER BY name');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error getting all cuisines:', error);
+        res.status(500).send('Server error');
+    }
+});
+  
+  // Get distinct meal types
+  router.get('/recipes/mealTypes', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT meal_type FROM recipes ORDER BY name');
+      res.json(result.rows.map(row => row.meal_type));
+    } catch (error) {
+      console.error('Error fetching meal types:', error);
+      res.status(500).json({ message: 'Failed to fetch meal types' });
+    }
+  });
+
+  router.get('/recipes/by-cuisine/:cuisine', async (req, res) => {
+    const { cuisine } = req.params;
+    try {
+      const queryText = `
+        SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username
+        FROM recipes
+        JOIN cuisines ON recipes.cuisine_id = cuisines.id
+        JOIN users ON recipes.user_id = users.id
+        WHERE cuisines.name = $1
+        ORDER BY recipes.created_at DESC;
+      `;
+      const result = await pool.query(queryText, [cuisine]);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: 'No recipes found for this cuisine.' });
+      }
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Error fetching recipes by cuisine:', error);
+      res.status(500).json({ message: 'An error occurred while fetching recipes by cuisine.' });
+    }
+  });
+  
+ router.get('/recipes/by-meal-type/:mealType', async (req, res) => {
+  const { mealType } = req.params;
+  try {
+    const queryText = `
+      SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username
+      FROM recipes
+      JOIN cuisines ON recipes.cuisine_id = cuisines.id
+      JOIN users ON recipes.user_id = users.id
+      WHERE recipes.meal_type = $1
+      ORDER BY recipes.created_at DESC;
+    `;
+    const result = await pool.query(queryText, [mealType]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'No recipes found for this meal type.' });
+    }
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching recipes by meal type:', error);
+    res.status(500).json({ message: 'An error occurred while fetching recipes by meal type.' });
+  }
 });
 
 
