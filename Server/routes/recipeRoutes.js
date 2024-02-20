@@ -219,6 +219,36 @@ router.delete('/recipes/:recipeId/comments/:commentId', authenticateToken, async
     }
 });
 
+router.get('/recipes/sorted', async (req,res) => {
+    const {sortBy} = req.query;
+
+    let orderByColumn;
+    switch (sortBy){
+        case 'cuisine':
+            orderByColumn = 'cuisines.name';
+            break;
+        case 'mealType': 
+            orderByColumn = 'recipes.meal_type';
+            break;
+        default:
+            orderByColumn = 'recipes.created_at';
+            break;
+    }
+    try {
+        const result = await query(`
+            SELECT recipes.*, cuisines.name AS cuisine_name, users.username, AS username
+            FROM recipes
+            JOIN cuisines ON recipes.cuisine_id = cuisines.id
+            JOIN users ON recipes.user_id = user.id
+            ORDER BY ${orderByColumn} ASC
+            `);
+            res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching sorted recipes:', error);
+        res.status(500).json({ message: 'An error occurred while fetching sorted recipes.' });
+    }
+});
+
 
 // Export the router
 export default router;

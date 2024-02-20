@@ -1,6 +1,6 @@
 // Album.js
 import React, { useState, useEffect } from 'react';
-import { ThemeProvider, createTheme, CssBaseline, useThemeProps, Rating, Button, IconButton } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, useThemeProps, Rating, Button, IconButton, Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { Card, CardContent, Typography, Grid } from '@mui/material';
 import DoubleArrowIcon from '@mui/icons-material/DoubleArrow';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -45,6 +45,7 @@ const theme = createTheme({
 export default function Cookbook() {
 
   const [recipes, setRecipes] = useState([]);
+  const [sortBy, setSortBy] = useState('');
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -80,17 +81,47 @@ export default function Cookbook() {
       
     }
   }
+  
+  const handleChange = (event) => {
+    setSortBy(event.target.value);
+    fetchSortedRecipes(event.target.value);
+  };
 
+  const fetchSortedRecipes = async (sortBy) => {
+  const response = await fetch(`http://localhost:4000/api/recipes/sorted?sortBy=${sortBy}`);
+  if (response.ok) {
+    const fetchedRecipes = await response.json();
+    setRecipes(fetchedRecipes);
+  } else {
+    // Handle errors or display a message
+    console.error("Failed to fetch sorted recipes");
+  }
+};
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Typography variant='h2' color={'text.secondary'} textAlign={'center'}>Cookbook</Typography>
+      <Box sx={{ minWidth: 120 }}>
+  <FormControl fullWidth>
+    <InputLabel id="sort-by-select-label">Sort By</InputLabel>
+    <Select
+      labelId="sort-by-select-label"
+      id="sort-by-select"
+      value={sortBy}
+      label="Sort By"
+      onChange={handleChange}
+    >
+      <MenuItem value="cuisine">Cuisine</MenuItem>
+      <MenuItem value="mealType">Meal Type</MenuItem>
+    </Select>
+  </FormControl>
+</Box>
       <Grid container spacing={2} sx={{ mt: 4 }}>
       
         {recipes.map((recipe) => ( 
-          <Grid item xs={12} sm={6} md={4} key={recipe.id}>
-          <Card alignContent={'center'} sx={{ maxWidth: 345 }}>
+          <Grid alignContent={'center'} item xs={12} sm={6} md={4} key={recipe.id}>
+          <Card sx={{ maxWidth: 345 }}>
             <CardHeader
              title={recipe.name}
              subheader={recipe.cuisine_name}
