@@ -21,6 +21,8 @@ import ShareIcon from '@mui/icons-material/Share';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Link } from 'react-router-dom';
+import CircularProgress from '@mui/material/CircularProgress';
+
 
 
 const theme = createTheme({
@@ -54,28 +56,50 @@ const theme = createTheme({
 export default function Cookbook() {
 
   const [recipes, setRecipes] = useState([]);
-  const [sortBy, setSortBy] = useState('');
-  const [mealTypes, setMealTypes] = useState([]);
-  const [cuisines, setCuisines] = useState([])
   const [sortCategory, setSortCategory] = useState('');
   const [selectedOption, setSelectedOption] = useState('');
-  const [sortingOptions, setSortingOptions] = useState([]); // Unified state for both cuisines and meal types
   const [options, setOptions] = useState([])
+  const [isFetching, setIsFetching] = useState(false);
+  const [noRecipesFound, setNoRecipesFound] = useState(false);
 
   useEffect(() => {
     const fetchRecipes = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/recipes');
+        let url = 'http://localhost:4000/api/recipes';
+        if (selectedOption && sortCategory) {
+          if (sortCategory === 'cuisine') {
+            url += `/by-cuisine/${encodeURIComponent(selectedOption)}`; // Adjust the URL for fetching by cuisine
+          } else if (sortCategory === 'mealType') {
+            url += `/by-meal-type/${encodeURIComponent(selectedOption)}`; // Adjust the URL for fetching by meal type
+          }
+        }
+        const response = await fetch(url);
         const data = await response.json();
-        setRecipes(data);
+        console.log(data); // Check the actual format of received data
+        if (data.length === 0){
+          setNoRecipesFound(true);
+        }else{
+          if (Array.isArray(data)) {
+            setRecipes(data);
+            setNoRecipesFound(data.length === 0);
+          } else {
+            console.error('Fetched data is not an array:', data);
+            setRecipes([]); // Reset or keep the existing recipes
+            setNoRecipesFound(true); // Consider how you want to handle this case
+          }
+          
+        }
       } catch (error) {
         console.error('Error fetching recipes: ', error);
+      } finally {
+        setIsFetching(false);
       }
+
     };
-
+  
     fetchRecipes();
-  }, []);
-
+  }, [selectedOption]); // Depend on selectedOption to refetch when it changes
+  
   
 
   const deleteRecipe = async (recipeId) => {
@@ -120,58 +144,14 @@ export default function Cookbook() {
     }
   }, [sortCategory]);
 
-  const fetchCuisines = async () => {
-    try{
-    const response = await fetch(`http://localhost:4000/api/recipes/cuisines`);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    const cuisineData = await response.json();
-    const cuisineNames = cuisineData.map(cuisine => cuisine.name);
-    setCuisines(cuisineNames);
-    } catch (error) {
-    console.error('Error fetching recipes: ', error);
-  }
-  }
-
-  const fetchMealTypes = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/recipes/mealTypes`);
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      const mealTypeData = await response.json();
-      const mealTypeNames = mealTypeData.map(recipes => recipes.meal_type);
-      setMealTypes(mealTypeNames)
-    } catch (error) {
-      console.error('Error fetching cuisines:', error);
-    }
-  }
-
-  const fetchSortedRecipes = async (selectedOption) => {
-    let url = `http://localhost:4000/api/recipes`; // Default URL
-    if (sortCategory === 'cuisine') {
-      url += `/by-cuisine/${selectedOption}`;
-    } else if (sortCategory === 'mealType') {
-      url += `/by-meal-type/${selectedOption}`;
-    }
-  
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error('Could not fetch sorted recipes');
-      const sortedRecipes = await response.json();
-      setRecipes(sortedRecipes);
-    } catch (error) {
-      console.error('Error fetching sorted recipes:', error);
-    }
-  };
-
   const handleSortCategoryChange = (event) => {
+    console.log("Sort Category Changed:", event.target.value);
     setSortCategory(event.target.value);
     setSelectedOption(''); // Reset selectedOption when sortCategory changes
   };
 
   const handleOptionChange = (event) => {
+    console.log("Option Changed:", event.target.value);
     setSelectedOption(event.target.value);
     // Assume fetchSortedRecipes function will use selectedOption to fetch and update recipes
   };
@@ -216,9 +196,23 @@ export default function Cookbook() {
         </FormControl>
       )}
     </Box>
-      <Grid container spacing={2} sx={{ mt: 4 }}>
-      
-        {recipes.map((recipe) => ( 
+    <Grid container spacing={2} sx={{ mt: 4 }}>
+  {isFetching && (
+    <Grid item xs={12}>
+      <Box display="flex" justifyContent="center">
+        <CircularProgress />
+      </Box>
+    </Grid>
+  )}
+  {noRecipesFound && !isFetching && (
+    <Grid item xs={12}>
+      <Typography variant="h6" color="text.secondary" textAlign="center">
+        No recipes found for the selected cuisine. Please try a different one.
+      </Typography>
+    </Grid>
+  )}
+  {/* Recipe cards rendering */}
+    {!noRecipesFound && recipes.map((recipe) => (
           <Grid alignContent={'center'} item xs={12} sm={6} md={4} key={recipe.id}>
           <Card sx={{ maxWidth: 345 }}>
             <CardHeader

@@ -77,7 +77,7 @@ router.get('/recipes/user/:userId', async (req, res) => {
 router.get('/recipes/latest', async (req, res) =>{
     const limit = parseInt(req.query.limit) || 3;
     try {
-        const result = await query(`SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username FROM recipes
+        const result = await pool.query(`SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username FROM recipes
         JOIN cuisines ON recipes.cuisine_id = cuisines.id
         JOIN users ON recipes.user_id = users.id 
         ORDER BY recipes.created_at DESC
@@ -183,10 +183,10 @@ router.get('/recipes', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const offset = (page - 1) * limit;
     try {
-        const result = await query(
+        const result = await pool.query(
     `SELECT recipes.*, 
            cuisines.name AS cuisine_name, 
-           users.username AS username,
+           users.username AS username
            
     FROM recipes 
     JOIN cuisines ON recipes.cuisine_id = cuisines.id 
@@ -311,8 +311,8 @@ router.get('/cuisines', async (req, res) => {
   // Get distinct meal types
   router.get('/recipes/mealTypes', async (req, res) => {
     try {
-      const result = await pool.query('SELECT meal_type FROM recipes ORDER BY name');
-      res.json(result.rows.map(row => row.meal_type));
+      const result = await pool.query('SELECT name FROM mealtypes ORDER BY name');
+      res.json(result.rows);
     } catch (error) {
       console.error('Error fetching meal types:', error);
       res.status(500).json({ message: 'Failed to fetch meal types' });
@@ -345,12 +345,14 @@ router.get('/cuisines', async (req, res) => {
   const { mealType } = req.params;
   try {
     const queryText = `
-      SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username
-      FROM recipes
-      JOIN cuisines ON recipes.cuisine_id = cuisines.id
-      JOIN users ON recipes.user_id = users.id
-      WHERE recipes.meal_type = $1
-      ORDER BY recipes.created_at DESC;
+    SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username, mealtypes.name AS meal_type_name
+    FROM recipes
+    JOIN cuisines ON recipes.cuisine_id = cuisines.id
+    JOIN users ON recipes.user_id = users.id
+    JOIN mealtypes ON recipes.meal_type_id = mealtypes.id  
+    WHERE mealtypes.name = $1
+    ORDER BY recipes.created_at DESC;
+    
     `;
     const result = await pool.query(queryText, [mealType]);
     if (result.rows.length === 0) {
