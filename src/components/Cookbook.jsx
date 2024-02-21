@@ -24,6 +24,14 @@ import { Link } from 'react-router-dom';
 
 
 const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#FF5722', // Example primary color
+    },
+    secondary: {
+      main: '#4CAF50', // Example secondary color
+    },
+    
   typography: {
     fontFamily: [
       'Roboto',
@@ -39,6 +47,7 @@ const theme = createTheme({
       fontFamily: 'Roboto, sans-serif',
     },
   },
+}
 });
 
 

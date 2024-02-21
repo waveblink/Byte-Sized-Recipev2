@@ -5,6 +5,14 @@ import CommentsSection from './CommentsSection';
 
 
 const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#FF5722', // Example primary color
+    },
+    secondary: {
+      main: '#4CAF50', // Example secondary color
+    },
+    
   typography: {
     fontFamily: [
       'Roboto',
@@ -19,11 +27,10 @@ const theme = createTheme({
     body1: {
       fontFamily: 'Roboto, sans-serif',
     },
-    allVariants: {
-      fontFamily: 'Playfair Display, serif',
-    },
   },
+}
 });
+
 
 
 function RecipeView(){

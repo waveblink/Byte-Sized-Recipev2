@@ -54,6 +54,14 @@
           };
 
           const theme = createTheme({
+            palette: {
+              primary: {
+                main: '#FF5722', // Example primary color
+              },
+              secondary: {
+                main: '#4CAF50', // Example secondary color
+              },
+              
             typography: {
               fontFamily: [
                 'Roboto',
@@ -69,8 +77,9 @@
                 fontFamily: 'Roboto, sans-serif',
               },
             },
+          }
           });
-
+          
     return (
 <ThemeProvider theme={theme}>
         <AppBar position="static">

@@ -15,6 +15,14 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
 
 const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#FF5722', // Example primary color
+    },
+    secondary: {
+      main: '#4CAF50', // Example secondary color
+    },
+    
   typography: {
     fontFamily: [
       'Roboto',
@@ -30,7 +38,9 @@ const theme = createTheme({
       fontFamily: 'Roboto, sans-serif',
     },
   },
+}
 });
+
 
 function Copyright(props) { 
   return (

@@ -19,6 +19,14 @@ import { useNavigate } from 'react-router-dom';
 
 
 const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#FF5722', // Example primary color
+    },
+    secondary: {
+      main: '#4CAF50', // Example secondary color
+    },
+    
   typography: {
     fontFamily: [
       'Roboto',
@@ -34,7 +42,9 @@ const theme = createTheme({
       fontFamily: 'Roboto, sans-serif',
     },
   },
+}
 });
+
 //Will need to caryry login name props so that it shows up on the home page.
 //post request so that when you are logged in sends you to home screen
 
