@@ -12,6 +12,7 @@ import ChatBot from './components/ChatBot.jsx';
 import RecipeView from './components/RecipeView.jsx';
 import { UserProvider } from './components/UserContext.jsx';
 import ValidateSession from './components/ValidateSession.jsx';
+import NavBar2 from './components/NavBar2.jsx';
 
 
 
@@ -23,7 +24,8 @@ function App() {
       <div className="App">
       <UserProvider>
       <ValidateSession />
-        <Navbar />
+      <NavBar2 />
+        {/* <Navbar /> */}
         <Routes>
           <Route path="/" element={<Album />} />
           <Route path="/cookbook" element={<Cookbook />} />

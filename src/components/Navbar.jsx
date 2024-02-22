@@ -74,7 +74,7 @@
                 fontFamily: 'Playfair Display, serif',
               },
               body1: {
-                fontFamily: 'Roboto, sans-serif',
+                fontFamily: 'Quicksand, sans-serif',
               },
             },
           }

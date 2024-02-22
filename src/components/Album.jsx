@@ -8,6 +8,7 @@ import PhotoCards from './Hero.jsx'; // Correct import
 import Cards from './Photo.jsx';
 import Footer from './Footer.jsx';
 import Navbar from './Navbar.jsx';
+import WhoWeAreSection from './WhoWeAreSection.jsx';
 import { Link } from 'react-router-dom';
 import CarouselComponent from './CarouselComponent.jsx';
 
@@ -19,24 +20,29 @@ const theme = createTheme({
     secondary: {
       main: '#4CAF50', // Example secondary color
     },
-    
+  },
   typography: {
-    fontFamily: [
-      'Roboto',
-      'Playfair Display',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
+    fontFamily: 'Quicksand, Arial, sans-serif',
     h1: {
-      fontFamily: 'Playfair Display, serif',
+      fontFamily: 'Quicksand, serif',
+      fontWeight: 700, // Make sure you have the correct weight imported
     },
     body1: {
-      fontFamily: 'Roboto, sans-serif',
+      fontFamily: 'Quicksand, sans-serif',
     },
   },
-}
 });
+
+// const WhoWeAreSection = () => (
+//   <Grid item xs={12} sm={8} md={6}>
+//     <Typography variant="h4" gutterBottom>
+//       Who We Are
+//     </Typography>
+//     <Typography variant="body1">
+//       At Byte-Sized Recipes, we're passionate about the intersection of technology and culinary arts. Our platform leverages AI to create, review, and share innovative recipes with a vibrant community of food lovers. Dive into a new world of flavors with recipes crafted by AI and refined by connoisseurs like you.
+//     </Typography>
+//   </Grid>
+// );
 
 export default function Album() {
 
@@ -63,12 +69,20 @@ export default function Album() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Grid container justifyContent="center" spacing={2} sx={{ mt: 4 }}>
+        <Grid item xs={12} sm={8} md={6}> {/* Adjusted for centering */}
+          <Typography variant='h1'>
+            Byte-Sized Recipes
+          </Typography> 
+        </Grid>
+        </Grid>
       {/* Container for the carousel */}
       <Grid container justifyContent="center" spacing={2} sx={{ mt: 4 }}>
         <Grid item xs={12} sm={8} md={6}> {/* Adjusted for centering */}
           <CarouselComponent />
         </Grid>
       </Grid>
+      <WhoWeAreSection /> 
       {/* Container for the recipe cards */}
       <Grid container justifyContent="center" spacing={2} sx={{ mt: 4 }}>
         {recipes.map((recipe) => (
