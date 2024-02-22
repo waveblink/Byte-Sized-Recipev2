@@ -9,7 +9,7 @@ import Cards from './Photo.jsx';
 import Footer from './Footer.jsx';
 import Navbar from './Navbar.jsx';
 import { Link } from 'react-router-dom';
-
+import CarouselComponent from './CarouselComponent.jsx';
 
 const theme = createTheme({
   palette: {
@@ -63,42 +63,43 @@ export default function Album() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Grid container spacing={2} sx={{ mt: 4 }}>
-        {recipes.map((recipe) => ( 
-          <Grid item xs={12} sm={6} md={4} key={recipe.id}>
-          <Card sx={{ maxWidth: 345 }}>
-            <CardHeader
-             title={recipe.name}
-             subheader={recipe.cuisine_name}
-             />
-             <CardMedia
-            component="img"
-            height="194"
-            image="/croissant.jpg" 
-            alt={recipe.name} 
-      />
-             <CardContent>
-             <Typography variant="body2" color="text.secondary">
-
-        </Typography>
-
-              <Typography variant='body2' component='p'>
-              <Rating name="read-only" value={parseFloat(recipe.rating)} readOnly />
-
-              </Typography>
-              <Button 
-              variant="outlined" 
-              component={Link} 
-              to={`/recipe/${recipe.id}`} // Use template literals to dynamically set the URL
-              endIcon={<DoubleArrowIcon />}>
-                View
-              </Button>
-              
-            </CardContent>
-          </Card>
+      {/* Container for the carousel */}
+      <Grid container justifyContent="center" spacing={2} sx={{ mt: 4 }}>
+        <Grid item xs={12} sm={8} md={6}> {/* Adjusted for centering */}
+          <CarouselComponent />
+        </Grid>
+      </Grid>
+      {/* Container for the recipe cards */}
+      <Grid container justifyContent="center" spacing={2} sx={{ mt: 4 }}>
+        {recipes.map((recipe) => (
+          <Grid item xs={12} sm={8} md={6} key={recipe.id}> {/* Adjusted for centering */}
+            <Card sx={{ maxWidth: 345, margin: 'auto' }}> {/* Center the card */}
+              <CardHeader
+                title={recipe.name}
+                subheader={recipe.cuisine_name}
+              />
+              <CardMedia
+                component="img"
+                height="194"
+                image="/croissant.jpg" 
+                alt={recipe.name}
+              />
+              <CardContent>
+                <Typography variant="body2" color="text.secondary">
+                </Typography>
+                <Typography variant='body2' component='p'>
+                  <Rating name="read-only" value={parseFloat(recipe.rating)} readOnly />
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  component={Link} 
+                  to={`/recipe/${recipe.id}`}
+                  endIcon={<DoubleArrowIcon />}>
+                    View
+                </Button>
+              </CardContent>
+            </Card>
           </Grid>
-
-
         ))}
       </Grid>
     </ThemeProvider>
