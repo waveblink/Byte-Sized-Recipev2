@@ -50,8 +50,8 @@ router.post('/submit-recipe', authenticateToken, async (req, res) => {
         }
 
         const result = await query(
-            'INSERT INTO recipes (name, cuisine_id, meal_type_id , ingredients, instructions, rating, user_Id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [name, cuisineId, mealType, ingredients, instructions, rating, userId]
+            'INSERT INTO recipes (name, cuisine_id, meal_type_id, ingredients, instructions, rating, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [name, cuisineId, mealTypeId, ingredients, instructions, rating, userId] // Use mealTypeId here instead of mealType
         );
 
         res.status(201).json(result.rows[0]);

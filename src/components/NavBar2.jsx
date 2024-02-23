@@ -2,8 +2,52 @@ import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
+import { useUser } from './UserContext.jsx';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function NavBar2() {
+
+  const { user, setUser } = useUser();
+        console.log('User in Navbar:', user);
+        const navigate = useNavigate();
+        const [loading, setLoading] = useState(false);
+        const [error, setError] = useState('');
+
+
+
+    
+        const logOut = async () => {
+            setLoading(true);
+            setError('');
+
+            try {
+              const response = await fetch('http://localhost:4000/api/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+
+              });
+              if (response.ok) {
+                console.log('Logout successful:');
+                setUser(null); // Adjust according to your actual user object structure
+                navigate('/'); // Redirect to the homepage or dashboard
+              } else {
+                // Handle HTTP errors, such as 401 Unauthorized
+                console.error('Failed to logout');
+                alert('Failed to logout.');
+              }
+            } catch (error) {
+              console.error('Error logging out:', error);
+              setError('An error occurred. Please try again.');
+              alert('Error logging out. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+          };
+
+
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: 'white', color: 'orange', borderBottom: 3, borderColor: 'orange' }}>
@@ -18,12 +62,25 @@ export default function NavBar2() {
           <Button component={Link} to="/" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
             Home
           </Button>
-          <Button component={Link} to="/login" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
+            {user ? (
+                
+                <>
+                    <Button color = "inherit">{user.firstname}</Button>
+                    <Button color="inherit"
+                    onClick={logOut}>Logout</Button>
+                </>
+                ) : (
+                    <>
+            <Button component={Link} to="/login" variant="contained">Login</Button>
+            <Button component={Link} to="/register" variant="contained">Register</Button>
+            </>
+                )}
+          {/* <Button component={Link} to="/login" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
             Login
           </Button>
           <Button component={Link} to="/register" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
             Register
-          </Button>
+          </Button> */}
           <Button component={Link} to="/cookbook" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
             Cookbook
           </Button>
