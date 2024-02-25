@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, Typography, Paper,ThemeProvider, createTheme } from '@mui/material';
+import { TextField, Button, Box, Typography, Paper,ThemeProvider, createTheme, ButtonGroup } from '@mui/material';
 import axios from 'axios'; // Ensure you have axios installed
 import CircularProgress from '@mui/material/CircularProgress';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
 
 
 export default function ChatBot() {
@@ -19,23 +22,17 @@ export default function ChatBot() {
       secondary: {
         main: '#4CAF50', // Example secondary color
       },
-      
+    },
     typography: {
-      fontFamily: [
-        'Roboto',
-        'Playfair Display',
-        '"Helvetica Neue"',
-        'Arial',
-        'sans-serif',
-      ].join(','),
+      fontFamily: 'Quicksand, Arial, sans-serif',
       h1: {
-        fontFamily: 'Playfair Display, serif',
+        fontFamily: 'Quicksand, serif',
+        fontWeight: 700, // Make sure you have the correct weight imported
       },
       body1: {
-        fontFamily: 'Roboto, sans-serif',
+        fontFamily: 'Quicksand, sans-serif',
       },
     },
-  }
   });
   
   
@@ -85,21 +82,25 @@ const getRandomCuisine = () => {
   return cuisines[randomIndex];
 }
 
-  return (
-    <>
-      <ThemeProvider theme={theme}>
-    <Box sx={{ maxWidth: 600, margin: 'auto', textAlign: 'center' }}>
-  <Typography variant="h4" sx={{ my: 2 }}>
-    What Cuisine Would You Like a Recipe From?
-    <Button onClick={()=> handleCuisineChange('Italian')} variant="contained" color="primary">Italian</Button> 
-    <Button onClick={()=> handleCuisineChange('American')} variant="contained" color="primary">American</Button> 
-    <Button onClick={()=> handleCuisineChange('English')} variant="contained" color="primary">English</Button>
-    <Button onClick={()=> handleCuisineChange('Chinese')} variant="contained" color="primary">Chinese</Button> 
-    <Button onClick={()=> handleCuisineChange('Japanese')} variant="contained" color="primary">Japanese</Button> 
-    <Button onClick={()=> handleCuisineChange('French')} variant="contained" color="primary">French</Button> 
-    <Button onClick={()=> handleCuisineChange('Mexican')} variant="contained" color="primary">Mexican</Button> 
-    <Button onClick={() => handleCuisineChange(getRandomCuisine())} variant="contained" color="primary">Surprise Me!</Button>
-        </Typography>
+return (
+  <>
+    <ThemeProvider theme={theme}>
+  <Box sx={{ maxWidth: 800, margin: 'auto', textAlign: 'center' }}>
+<Typography variant="h4" sx={{ my: 2 }}>
+  What Cuisine Would You Like a Recipe From?
+  </Typography>
+  <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+  <ButtonGroup>
+  <Button onClick={()=> handleCuisineChange('Italian')} sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Italian</Button> 
+  <Button onClick={()=> handleCuisineChange('American')} sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>American</Button> 
+  <Button onClick={()=> handleCuisineChange('English')} sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>English</Button>
+  <Button onClick={()=> handleCuisineChange('Chinese')} sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Chinese</Button> 
+  <Button onClick={()=> handleCuisineChange('Japanese')} sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Japanese</Button> 
+  <Button onClick={()=> handleCuisineChange('French')} sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>French</Button> 
+  <Button onClick={()=> handleCuisineChange('Mexican')} sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Mexican</Button> 
+  <Button onClick={() => handleCuisineChange(getRandomCuisine())} sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>Surprise Me!</Button>
+  </ButtonGroup>
+  </Box>
         {isBoxVisible && (
   <Box component="form" onSubmit={handleSubmit} noValidate sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
     <TextField
@@ -119,13 +120,16 @@ const getRandomCuisine = () => {
   </Box>
 )}
 
-        <Box sx={{ maxHeight: 300, overflowY: 'auto' }}>
-          {responses.map((entry, index) => (
-            <Paper key={index} sx={{ p: 2, mb: 1 }}>
-              <Typography><strong>You:</strong> {entry.query}</Typography>
-              <Typography><strong>Bot:</strong> {entry.response}</Typography>
-            </Paper>
+        <Box sx={{ maxHeight: 800, overflowY: 'auto' }}>
+        {responses.map((entry, index) => (
+          <Paper key={index} sx={{ p: 2, mb: 1, textAlign: 'left' }}>
+          <Typography><strong>You:</strong> {entry.query}</Typography>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {entry.response}
+          </ReactMarkdown>
+         </Paper>
           ))}
+
         </Box>
       </Box>
       </ThemeProvider>

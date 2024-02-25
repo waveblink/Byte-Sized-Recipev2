@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box, ThemeProvider, createTheme } from '@mui/material';
 import { Link } from 'react-router-dom';
 import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
 import { useUser } from './UserContext.jsx';
@@ -7,6 +7,27 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 export default function NavBar2() {
+
+  const theme = createTheme({
+    palette: {
+      primary: {
+        main: '#FF5722', // Example primary color
+      },
+      secondary: {
+        main: '#4CAF50', // Example secondary color
+      },
+    },
+    typography: {
+      fontFamily: 'Quicksand, Arial, sans-serif',
+      h1: {
+        fontFamily: 'Quicksand, serif',
+        fontWeight: 700, // Make sure you have the correct weight imported
+      },
+      body1: {
+        fontFamily: 'Quicksand, sans-serif',
+      },
+    },
+  });
 
   const { user, setUser } = useUser();
         console.log('User in Navbar:', user);
@@ -49,6 +70,7 @@ export default function NavBar2() {
 
 
   return (
+    <ThemeProvider theme={theme}>
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: 'white', color: 'orange', borderBottom: 3, borderColor: 'orange' }}>
         <Toolbar>
@@ -71,8 +93,9 @@ export default function NavBar2() {
                 </>
                 ) : (
                     <>
-            <Button component={Link} to="/login" variant="contained">Login</Button>
-            <Button component={Link} to="/register" variant="contained">Register</Button>
+            <Button component={Link} to="/login" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' }}}>Login</Button>
+            <Button component={Link} to="/register" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' }
+            }}>Register</Button>
             </>
                 )}
           {/* <Button component={Link} to="/login" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>
@@ -94,5 +117,6 @@ export default function NavBar2() {
         </Toolbar>
       </AppBar>
     </Box>
+    </ThemeProvider>
   );
 }

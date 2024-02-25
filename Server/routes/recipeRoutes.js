@@ -31,36 +31,47 @@ router.get('/api/recipes/cuisines', async (req, res) => {
 
 // Define a route for submitting recipes
 router.post('/submit-recipe', authenticateToken, async (req, res) => {
-    const { name, cuisine, mealType, ingredients, instructions, rating } = req.body;
-    const userId= req.user.id;
-    console.log(req.body);
+    const { name, cuisine, mealType, ingredients, instructions, rating, nutritionFacts } = req.body;
+    const userId = req.user.id;
+    console.log("Received recipe submission:", req.body);
+
     try {
+        // Log before looking up cuisine
+        console.log(`Looking up cuisine: ${cuisine}`);
         const cuisineResult = await query('SELECT id FROM cuisines WHERE name = $1', [cuisine]);
-        const cuisineId = cuisineResult.rows[0]?.id;
-
-        const mealTypeResult = await pool.query('SELECT id FROM mealtypes WHERE name = $1', [mealType]);
-        const mealTypeId = mealTypeResult.rows[0]?.id;
-
-        if (!mealTypeId) {
-            return res.status(400).json({ error: "mealTypeId not found" });
-        }
-
-        if (!cuisineId) {
+        if (cuisineResult.rows.length === 0) {
+            console.log("Cuisine not found in database:", cuisine);
             return res.status(400).json({ error: "Cuisine not found" });
         }
+        const cuisineId = cuisineResult.rows[0].id;
+        // Log after finding cuisine ID
+        console.log(`Cuisine ID found: ${cuisineId}`);
 
+        // Log before looking up meal type
+        console.log(`Looking up meal type: ${mealType}`);
+        const mealTypeResult = await query('SELECT id FROM mealtypes WHERE name = $1', [mealType]);
+        if (mealTypeResult.rows.length === 0) {
+            console.log("Meal type not found in database:", mealType);
+            return res.status(400).json({ error: "Meal type not found" });
+        }
+        const mealTypeId = mealTypeResult.rows[0].id;
+        // Log after finding meal type ID
+        console.log(`Meal Type ID found: ${mealTypeId}`);
+
+        // Proceed with inserting the recipe into the database
         const result = await query(
-            'INSERT INTO recipes (name, cuisine_id, meal_type_id, ingredients, instructions, rating, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-            [name, cuisineId, mealTypeId, ingredients, instructions, rating, userId] // Use mealTypeId here instead of mealType
+            'INSERT INTO recipes (name, cuisine_id, meal_type_id, ingredients, instructions, rating, user_id, nutritionfacts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+            [name, cuisineId, mealTypeId, ingredients, instructions, rating, userId, nutritionFacts]
         );
 
+        console.log("Recipe submitted successfully:", result.rows[0]);
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error('Error inserting recipe:', err);
-        // Consider more detailed error handling here
+        console.error("Error inserting recipe:", err);
         res.status(500).json({ message: 'An error occurred while inserting the recipe.' });
     }
 });
+
 
 router.get('/recipes/user/:userId', async (req, res) => {
     const { userId } = req.params;

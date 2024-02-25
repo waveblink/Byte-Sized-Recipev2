@@ -13,23 +13,17 @@ const theme = createTheme({
     secondary: {
       main: '#4CAF50', // Example secondary color
     },
-    
+  },
   typography: {
-    fontFamily: [
-      'Roboto',
-      'Playfair Display',
-      '"Helvetica Neue"',
-      'Arial',
-      'sans-serif',
-    ].join(','),
+    fontFamily: 'Quicksand, Arial, sans-serif',
     h1: {
-      fontFamily: 'Playfair Display, serif',
+      fontFamily: 'Quicksand, serif',
+      fontWeight: 700, // Make sure you have the correct weight imported
     },
     body1: {
-      fontFamily: 'Roboto, sans-serif',
+      fontFamily: 'Quicksand, sans-serif',
     },
   },
-}
 });
 
 export default function Generate() {
@@ -39,6 +33,7 @@ export default function Generate() {
     mealType: "",
     ingredients: "",
     instructions: "",
+    nutritionFacts: "",
     rating: 0,
   });
   
@@ -80,6 +75,7 @@ export default function Generate() {
           mealType: "",
           ingredients: "",
           instructions: "",
+          nutritionFacts: "",
           rating: 0,
           // Make sure to reset the rating as well, if it's part of formData
         });
@@ -152,19 +148,31 @@ export default function Generate() {
           </Select>
           </FormControl>
 
-          <TextField
-            variant="outlined"
-            margin="normal"
-            required
-            fullWidth
-            name="mealType"
-            label="Meal Type"
-            type="text"
-            id="mealType"
-            autoComplete="meal-type"
-            value={formData.mealType}
-            onChange={handleChange}
-          />
+          <FormControl fullWidth variant="outlined" margin="normal">
+              <InputLabel id="mealType-label">Meal Type</InputLabel>
+              <Select
+                labelId="mealType-label"
+                id="mealType"
+                name="mealType"
+                value={formData.mealType}
+                onChange={handleChange}
+                label="mealType" // This ensures the label moves correctly
+              >
+
+                <MenuItem value="" disabled>
+            Cuisine
+            </MenuItem>
+            <MenuItem value={"Breakfast"}>Breakfast</MenuItem>
+            <MenuItem value={"Lunch"}>Lunch</MenuItem>
+            <MenuItem value={"Dinner"}>Dinner</MenuItem>
+            <MenuItem value={"Snack"}>Snack</MenuItem>
+            <MenuItem value={"Bread"}>Bread</MenuItem>
+            <MenuItem value={"Dessert"}>Dessert</MenuItem>
+            <MenuItem value={"Pastry"}>Pastry</MenuItem>
+            <MenuItem value={"Other"}>Other</MenuItem>
+          </Select>
+          </FormControl>
+          
           <TextField
             variant="outlined"
             margin="normal"
@@ -187,6 +195,18 @@ export default function Generate() {
             multiline
             rows={4}
             value={formData.instructions}
+            onChange={handleChange}
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            multiline
+            name="nutritionFacts"
+            label="Nutrition Facts"
+            rows={4}
+            value={formData.nutritionFacts}
             onChange={handleChange}
           />
         <Rating
