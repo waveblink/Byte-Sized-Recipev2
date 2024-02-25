@@ -2,6 +2,7 @@ import express from 'express';
 import { query, pool } from '../db/db.js'; // Adjust the path as necessary
 import axios from "axios";
 import authenticateToken from '../middleware/authenticateToken.js';
+import { saveRecipeToDatabase } from '../db/db.js';
 const router = express.Router();
 
 
@@ -16,6 +17,31 @@ router.get('/api/recipes/cuisines', async (req, res) => {
         res.status(500).send('Server error');
     }
 });
+
+router.post('/api/my-recipes/save', authenticateToken, async (req, res)=> {
+    const userId = req.user.id;
+    const {recipe} = req.body;
+
+    try {
+        await saveRecipeToDatabase(userId, recipe);
+        res.send('Recipe Saved')
+    } catch (error) {
+        console.error('Error saving recipe:', error);
+    res.status(500).send('Failed to save recipe')
+    }
+
+})
+
+router.get('/api/my-recipes', authenticateToken, async (req, res) =>{
+    const userId = req.user.id;
+    try {
+        const recipes = await getRecipesByUserId(userId);
+        res.json(recipes);
+    } catch (error) {
+        console.error('Error fetching saved recipes:', error);
+    res.status(500).send('Failed to fetch saved recipes');
+    }
+})
 
 // router.get('/api/recipes/mealTypes', async (req, res) => {
 //     console.log('Fetching all mealTypes...');

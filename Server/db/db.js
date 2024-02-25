@@ -26,3 +26,32 @@ export const query = async (text, params) => {
     throw err;
   }
 };
+
+// Assuming you have a db.js file where you've set up your database connection
+/**
+ * Save a recipe to the database for a specific user.
+ * 
+ * @param {number} userId - The ID of the user saving the recipe.
+ * @param {object} recipe - The recipe object to save.
+ * @returns {Promise<void>}
+ */
+async function saveRecipeToDatabase(userId, recipe) {
+  // Assuming `recipe` object does not need `userId` from its structure,
+  // since `userId` is passed as a separate parameter
+  const { name, cuisineId, mealTypeId, ingredients, instructions, rating, nutritionFacts } = recipe;
+
+  const sql = `
+      INSERT INTO user_recipes (name, cuisine_id, meal_type_id, ingredients, instructions, rating, user_id, nutrition_facts)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+  `;
+
+  const values = [name, cuisineId, mealTypeId, ingredients, instructions, rating, userId, nutritionFacts];
+
+  try {
+      await query(sql, values); // Execute the query to insert the recipe
+  } catch (error) {
+      console.error('Error saving recipe to database:', error);
+      throw error; // Rethrow the error to be caught by the caller
+  }
+}
+

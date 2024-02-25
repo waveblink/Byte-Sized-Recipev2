@@ -16,6 +16,7 @@
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^16.4.1",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "openai": "^4.27.0",
     "pg": "^8.11.3",

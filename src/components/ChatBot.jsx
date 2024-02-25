@@ -14,6 +14,12 @@ export default function ChatBot() {
   const [loading, setLoading] = React.useState(false);
   const [isBoxVisible, setIsBoxVisible] = useState(false);
 
+function RecipeDisplay({recipe}){
+  const handleSaveRecipe = () => {
+
+  }
+}
+
   const theme = createTheme({
     palette: {
       primary: {
@@ -127,8 +133,16 @@ return (
         <ReactMarkdown remarkPlugins={[remarkGfm]}>
           {entry.response}
           </ReactMarkdown>
+          <Button
+            variant='contained'
+            color='orange'
+            onClick={()=> handleSaveRecipe(entry.response)}
+          sx={{ mt: 2 }}>
+            Save Recipe
+          </Button>
          </Paper>
           ))}
+          
 
         </Box>
       </Box>
