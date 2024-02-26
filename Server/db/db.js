@@ -35,23 +35,52 @@ export const query = async (text, params) => {
  * @param {object} recipe - The recipe object to save.
  * @returns {Promise<void>}
  */
-async function saveRecipeToDatabase(userId, recipe) {
-  // Assuming `recipe` object does not need `userId` from its structure,
-  // since `userId` is passed as a separate parameter
-  const { name, cuisineId, mealTypeId, ingredients, instructions, rating, nutritionFacts } = recipe;
+export async function saveAIGeneratedRecipe(recipe) {
+  const { name, cuisineId, mealTypeId, ingredients, instructions, rating, userId, nutritionFacts } = recipe; // Assuming these are the fields you have
 
   const sql = `
-      INSERT INTO user_recipes (name, cuisine_id, meal_type_id, ingredients, instructions, rating, user_id, nutrition_facts)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      INSERT INTO ai_generated_recipes (name, cuisine_id, meal_type_id, ingredients, instructions, rating, user_id, nutrition_facts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id
   `;
 
   const values = [name, cuisineId, mealTypeId, ingredients, instructions, rating, userId, nutritionFacts];
 
   try {
-      await query(sql, values); // Execute the query to insert the recipe
+      const result = await query(sql, values);
+      return result.rows[0].id; // Return the ID of the newly inserted recipe
   } catch (error) {
-      console.error('Error saving recipe to database:', error);
-      throw error; // Rethrow the error to be caught by the caller
+      console.error('Error saving AI-generated recipe to database:', error);
+      throw error;
   }
 }
 
+export async function linkRecipeToUser(userId, recipeId) {
+  const sql = `
+      INSERT INTO user_saved_recipes (user_id, recipe_id) VALUES ($1, $2)
+  `;
+
+  const values = [userId, recipeId];
+
+  try {
+      await query(sql, values);
+  } catch (error) {
+      console.error('Error linking recipe to user:', error);
+      throw error;
+  }
+}
+
+
+
+// Assuming this is in a file like dbOperations.js or a similar module
+export async function getRecipesByUserId(userId) {
+  const sql = `
+      SELECT * FROM user_recipes WHERE user_id = $1
+  `;
+
+  try {
+      const result = await query(sql, [userId]); // Execute the query
+      return result.rows; // Return the rows from the query result
+  } catch (error) {
+      console.error('Error fetching recipes from database:', error);
+      throw error; // Rethrow the error to be caught by the caller
+  }
+}

@@ -12,7 +12,63 @@ const jwtSecret = process.env.JWT_SECRET;
 
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+router.post('/login', async (req, res) => {
+    console.log("Login endpoint hit", req.body);
+    const { email, password } = req.body;
+    const jwtSecret = process.env.JWT_SECRET; // Ensure this is defined
 
+    try {
+        const userQuery = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        if (userQuery.rows.length === 0) {
+            // Using a generic error message
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        const user = userQuery.rows[0];
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+            // Using a generic error message
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        // Omitting password from the user data sent in the response
+        const { password, ...userDataWithoutPassword } = user;
+        
+        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1 day' });
+        res.cookie('token', token, { 
+            httpOnly: true, 
+            path: '/', 
+            maxAge: 24 * 60 * 60 * 1000, 
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Lax'
+        });
+        res.status(200).json({ message: "Login successful", user: userDataWithoutPassword });
+    } catch (error) {
+        console.error("Login error:", error);
+        res.status(500).json({ message: 'An error occurred during login.' });
+    }
+});
+
+
+async function getUserById(userId) {
+    const queryResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+    if (queryResult.rows.length > 0) {
+        return queryResult.rows[0]; // Returns the first user matching the ID
+    } else {
+        return null; // No user found
+    }
+}
+
+
+
+         
+
+router.post('/logout', (req, res) => {
+    console.log('Logout route hit');
+    res.cookie('token', '', { httpOnly: true, path: '/', expires: new Date(0) });
+    res.status(200).json({ message: 'Logged out successfully' });
+  });
+  
 
 router.post('/register', async (req, res) => {
     // Log when the route is hit
@@ -47,60 +103,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Assuming pool is already configured as shown in your initial code
-async function getUserById(userId) {
-    const queryResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
-    if (queryResult.rows.length > 0) {
-        return queryResult.rows[0]; // Returns the first user matching the ID
-    } else {
-        return null; // No user found
-    }
-}
-
-
-router.post('/login', async (req, res) => {
-    console.log("Login endpoint hit", req.body);
-    const { email, password } = req.body;
-
-    try {
-        // Check if user exists
-        const userQuery = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-        if (userQuery.rows.length === 0) {
-            return res.status(400).json({ message: "User not found or wrong email" });
-        }
-
-        const user = userQuery.rows[0];
-        const isValidPassword = await bcrypt.compare(password, user.password);
-        if (!isValidPassword) {
-            return res.status(401).json({ message: "Invalid Password" });
-        }
-        const userData = { ...user };
-        delete userData.password;
-        // If password is valid, generate a JWT token
-        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1 day' });
-        res.cookie('token', token, { 
-            httpOnly: true, 
-            path: '/', 
-            maxAge: 24 * 60 * 60 * 1000, 
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Lax'
-          });
-          
- 
-res.status(200).json({ message: "Welcome back!", user: userData, token });
-// res.cookie('testCookie', 'testValue', { 
-//     httpOnly: true, 
-//     path: '/', 
-//     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-//     secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-//     sameSite: 'Lax' // Set SameSite attribute to 'Lax'
-// });
-// res.status(200).json({ message: "Test cookie set" });
-    } catch (error) {
-        console.error("Error Logging In:", error);
-        res.status(500).json({ message: 'Error logging in' });
-    }
-});
 
 router.get('/validate', async (req, res) => {
     const token = req.cookies.token;
@@ -127,10 +129,6 @@ router.get('/validate', async (req, res) => {
     }
 });
 
-router.post('/logout', (req, res) => {
-    res.cookie('token', '', { httpOnly: true, path: '/', expires: new Date(0) });
-    res.status(200).json({ message: 'Logged out successfully' });
-});
 
 
 export default router;
