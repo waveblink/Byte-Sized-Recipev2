@@ -11,6 +11,8 @@ import Navbar from './Navbar.jsx';
 import WhoWeAreSection from './WhoWeAreSection.jsx';
 import { Link } from 'react-router-dom';
 import CarouselComponent from './CarouselComponent.jsx';
+import axios from 'axios';
+
 
 const theme = createTheme({
   palette: {
@@ -51,17 +53,13 @@ export default function Album() {
   useEffect(() => {
     const fetchLatestRecipes = async () => {
       try {
-        const response = await fetch('http://localhost:4000/api/recipes/latest');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        const data = await response.json();
-        setRecipes(data);
+        const response = await axios.get('http://localhost:4000/api/recipes/latest');
+        setRecipes(response.data);
       } catch (error) {
         console.error('Error fetching recipes: ', error);
       }
     };
-
+  
     fetchLatestRecipes();
   }, []);
   

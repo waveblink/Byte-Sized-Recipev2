@@ -4,6 +4,7 @@ import axios from 'axios'; // Ensure you have axios installed
 import CircularProgress from '@mui/material/CircularProgress';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Cookies from 'js-cookie';
 
 
 
@@ -14,11 +15,28 @@ export default function ChatBot() {
   const [loading, setLoading] = React.useState(false);
   const [isBoxVisible, setIsBoxVisible] = useState(false);
 
-function RecipeDisplay({recipe}){
-  const handleSaveRecipe = () => {
-
-  }
-}
+  const handleSaveRecipe = async (recipe) => {
+    // Assuming you have a user's authentication token stored, for example, in localStorage
+    const token = Cookies.get('token');
+    try {
+      const response = await axios.post('http://localhost:4000/api/my-recipes/save', { recipe }, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      withCredentials: true // This should be part of the same object as headers
+    });
+    
+      if (response.status === 200) {
+        alert('Recipe saved successfully!');
+      } else {
+        alert('Failed to save recipe.');
+      }
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      alert('An error occurred while saving the recipe.');
+    }
+  };
+  
 
   const theme = createTheme({
     palette: {
@@ -135,7 +153,7 @@ return (
           </ReactMarkdown>
           <Button
             variant='contained'
-            color='orange'
+            color='primary'
             onClick={()=> handleSaveRecipe(entry.response)}
           sx={{ mt: 2 }}>
             Save Recipe

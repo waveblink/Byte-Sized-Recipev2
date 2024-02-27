@@ -13,7 +13,7 @@ import RecipeView from './components/RecipeView.jsx';
 import { UserProvider } from './components/UserContext.jsx';
 import ValidateSession from './components/ValidateSession.jsx';
 import NavBar2 from './components/NavBar2.jsx';
-
+import MyRecipes from './components/MyRecipes.jsx';
 
 
 function App() {
@@ -34,6 +34,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/chatbot" element={<ChatBot />} />
           <Route path="/recipe/:id" element={<RecipeView />} />
+          <Route path="/my-recipes" element={<MyRecipes />} />
         </Routes>
         <Footer />
         </UserProvider>

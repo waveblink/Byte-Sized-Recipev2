@@ -53,7 +53,7 @@ const theme = createTheme({
 });
 
 
-export default function Cookbook() {
+export default function MyRecipes() {
 
   const [recipes, setRecipes] = useState([]);
   const [sortCategory, setSortCategory] = useState('');
@@ -61,50 +61,43 @@ export default function Cookbook() {
   const [options, setOptions] = useState([])
   const [isFetching, setIsFetching] = useState(false);
   const [noRecipesFound, setNoRecipesFound] = useState(false);
-
-  useEffect(() => {
-    const fetchRecipes = async () => {
-      try {
-        let url = 'http://localhost:4000/api/recipes';
-        if (selectedOption && sortCategory) {
-          if (sortCategory === 'cuisine') {
-            url += `/by-cuisine/${encodeURIComponent(selectedOption)}`; // Adjust the URL for fetching by cuisine
-          } else if (sortCategory === 'mealType') {
-            url += `/by-meal-type/${encodeURIComponent(selectedOption)}`; // Adjust the URL for fetching by meal type
-          }
-        }
-        const response = await fetch(url);
-        const data = await response.json();
-        console.log(data); // Check the actual format of received data
-        if (data.length === 0){
-          setNoRecipesFound(true);
-        }else{
-          if (Array.isArray(data)) {
-            setRecipes(data);
-            setNoRecipesFound(data.length === 0);
-          } else {
-            console.error('Fetched data is not an array:', data);
-            setRecipes([]); // Reset or keep the existing recipes
-            setNoRecipesFound(true); // Consider how you want to handle this case
-          }
-          
-        }
-      } catch (error) {
-        console.error('Error fetching recipes: ', error);
-      } finally {
-        setIsFetching(false);
+  const fetchRecipes = async () => {
+    try {
+      let url = 'http://localhost:4000/api/my-recipes';
+      // Include credentials: 'include' if your API expects credentials to be sent along with the request
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include', // Necessary for cookies to be sent and received
+        headers: {
+          'Content-Type': 'application/json',
+          // Assuming the token is stored in a cookie and accessible via document.cookie
+          // 'Authorization': `Bearer ${token}`,
+        },
+      });
+  
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
+  
+      const data = await response.json();
+  
+      if (data.length === 0) {
+        setNoRecipesFound(true);
+      } else {
+        setRecipes(data);
+        setNoRecipesFound(data.length === 0);
+      }
+    } catch (error) {
+      console.error('Error fetching recipes: ', error);
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
-    };
-  
-    fetchRecipes();
-  }, [selectedOption]); // Depend on selectedOption to refetch when it changes
-  
-  
 
   const deleteRecipe = async (recipeId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/recipes/${recipeId}`, {
+      const response = await fetch(`http://localhost:4000/api/my-recipes/${recipeId}`, {
         method: 'DELETE',
 
       });
@@ -126,7 +119,7 @@ export default function Cookbook() {
   useEffect(() => {
     // Fetch options based on sortCategory
     const fetchOptions = async () => {
-      let url = `http://localhost:4000/api/recipes/${sortCategory === 'cuisine' ? 'cuisines' : 'mealTypes'}`;
+      let url = `http://localhost:4000/api/my-recipes/${sortCategory === 'cuisine' ? 'cuisines' : 'mealTypes'}`;
       try {
         const response = await fetch(url);
         if (!response.ok) throw new Error('Failed to fetch options');

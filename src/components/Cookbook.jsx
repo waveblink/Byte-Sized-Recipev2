@@ -22,13 +22,13 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Link } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
-
+import axios from 'axios';
 
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#FF5722', // Example primary color
+      main: '#FF5722', // Example primary color-+2
     },
     secondary: {
       main: '#4CAF50', // Example secondary color
@@ -62,10 +62,13 @@ export default function Cookbook() {
   const [isFetching, setIsFetching] = useState(false);
   const [noRecipesFound, setNoRecipesFound] = useState(false);
 
+
   useEffect(() => {
     const fetchRecipes = async () => {
+      setIsFetching(true); // Assuming you have a state `isFetching` to track the loading status
+      
       try {
-        let url = 'http://localhost:4000/api/recipes';
+        let url = 'http://localhost:4000/api/recipes/latest';
         if (selectedOption && sortCategory) {
           if (sortCategory === 'cuisine') {
             url += `/by-cuisine/${encodeURIComponent(selectedOption)}`; // Adjust the URL for fetching by cuisine
@@ -73,8 +76,11 @@ export default function Cookbook() {
             url += `/by-meal-type/${encodeURIComponent(selectedOption)}`; // Adjust the URL for fetching by meal type
           }
         }
-        const response = await fetch(url);
-        const data = await response.json();
+        const response = await axios.get(url, {
+          withCredentials: true
+        });
+        
+        const { data } = response;
         console.log(data); // Check the actual format of received data
         if (data.length === 0){
           setNoRecipesFound(true);
@@ -87,18 +93,31 @@ export default function Cookbook() {
             setRecipes([]); // Reset or keep the existing recipes
             setNoRecipesFound(true); // Consider how you want to handle this case
           }
-          
         }
       } catch (error) {
         console.error('Error fetching recipes: ', error);
+        setIsFetching(false); // Ensure loading state is updated even in case of error
       } finally {
         setIsFetching(false);
       }
-
     };
   
     fetchRecipes();
-  }, [selectedOption]); // Depend on selectedOption to refetch when it changes
+  }, [selectedOption, sortCategory]); // Ensure useEffect runs when `selectedOption` or `sortCategory` changes
+  
+  
+  // useEffect(() => {
+  //   const fetchLatestRecipes = async () => {
+  //     try {
+  //       const response = await axios.get('http://localhost:4000/api/recipes/latest');
+  //       setRecipes(response.data);
+  //     } catch (error) {
+  //       console.error('Error fetching recipes: ', error);
+  //     }
+  //   };
+  
+  //   fetchLatestRecipes();
+  // }, []);
   
   
 

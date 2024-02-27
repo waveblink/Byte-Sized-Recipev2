@@ -15,7 +15,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useState } from 'react';
 import { useUser } from './UserContext'; 
 import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
 
 
 const theme = createTheme({
@@ -85,27 +85,19 @@ export default function Login() {
     event.preventDefault();
     setLoading(true);
     setError('');
-    // FormData approach is removed, using state (formData) directly
-    try {
-      const response = await fetch('http://localhost:4000/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-        credentials: 'include', // Ensure cookies are sent with the request
-      });
   
-      if (response.ok) {
-        const responseBody = await response.json();
-        console.log('Login successful:', responseBody);
-        setUser(responseBody.user); // Adjust according to your actual user object structure
-        setLoading(false);
-        navigate('/'); // Redirect to the homepage or dashboard
-      } else {
-        // Handle HTTP errors, such as 401 Unauthorized
-        alert('Failed to login. Please check your credentials.');
-      }
+    try {
+      const response = await axios.post('http://localhost:4000/api/login', formData, {
+        withCredentials: true,
+        headers: {
+    'Content-Type': 'application/json',
+  },
+});
+  
+      console.log('Login successful:', response.data);
+      setUser(response.data.user); // Adjust according to your actual user object structure
+      setLoading(false);
+      navigate('/'); // Redirect to the homepage or dashboard
     } catch (error) {
       console.error('Error Logging in:', error);
       setLoading(false);

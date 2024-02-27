@@ -5,6 +5,7 @@ import BakeryDiningIcon from '@mui/icons-material/BakeryDining';
 import { useUser } from './UserContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import axios from 'axios';
 
 export default function NavBar2() {
 
@@ -38,35 +39,25 @@ export default function NavBar2() {
 
 
     
-        const logOut = async () => {
-            setLoading(true);
-            setError('');
+        
 
-            try {
-              const response = await fetch('http://localhost:4000/api/logout', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
+const logOut = async () => {
+  setLoading(true);
+  setError('');
 
-              });
-              if (response.ok) {
-                console.log('Logout successful:');
-                setUser(null); // Adjust according to your actual user object structure
-                navigate('/'); // Redirect to the homepage or dashboard
-              } else {
-                // Handle HTTP errors, such as 401 Unauthorized
-                console.error('Failed to logout');
-                alert('Failed to logout.');
-              }
-            } catch (error) {
-              console.error('Error logging out:', error);
-              setError('An error occurred. Please try again.');
-              alert('Error logging out. Please try again later.');
-            } finally {
-                setLoading(false);
-            }
-          };
+  try {
+    const response = await axios.post('http://localhost:4000/api/logout', {}, { withCredentials: true });
+    console.log('Logout successful:', response.data);
+    setUser(null); // Adjust according to your actual user object structure
+    navigate('/'); // Redirect to the homepage or dashboard
+  } catch (error) {
+    console.error('Failed to logout:', error.response?.data?.message || 'Error logging out');
+    setError('An error occurred. Please try again.');
+    alert('Error logging out. Please try again later.');
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -87,7 +78,7 @@ export default function NavBar2() {
             {user ? (
                 
                 <>
-                    <Button color = "inherit">{user.firstname}</Button>
+                    <Button component={Link} to="/my-recipes" color = "inherit">{user.username}</Button>
                     <Button color="inherit"
                     onClick={logOut}>Logout</Button>
                 </>

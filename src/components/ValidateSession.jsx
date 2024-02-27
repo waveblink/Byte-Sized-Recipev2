@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useUser } from './UserContext';
+import axios from 'axios';
 
 const ValidateSession = () => {
     const { setUser } = useUser();
@@ -7,15 +8,14 @@ const ValidateSession = () => {
     useEffect(() => {
         async function validateSession() {
             try {
-                const response = await fetch('http://localhost:4000/api/validate', {
-                    method: 'GET',
-                    credentials: 'include',
+                const response = await axios.get('http://localhost:4000/api/validate', {
+                    withCredentials: true, // Correct way to send cookies with Axios
                 });
 
-                if (response.ok) {
-                    const { user } = await response.json();
-                    setUser(user);
-                }
+                // Directly access response data without calling .json()
+                const { user } = response.data;
+                setUser(user);
+
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -24,7 +24,7 @@ const ValidateSession = () => {
         validateSession();
     }, [setUser]); 
 
-    return null; 
+    return null; // Component does not render anything
 };
 
 export default ValidateSession;

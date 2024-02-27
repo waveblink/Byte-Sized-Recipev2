@@ -1,38 +1,33 @@
+import bcrypt from 'bcrypt';
 import express from 'express';
-import { pool, query } from './db/db.js'; // Adjust the path as necessary
-import { saveAIGeneratedRecipe } from './db/db.js';
-import { linkRecipeToUser } from './db/db.js';
-import authenticateToken from './middleware/authenticateToken.js';
-import dotenv from "dotenv";
-import { fileURLToPath } from 'url';
-import authRoutes from './routes/authRoutes.js';
-import cookieParser from 'cookie-parser';
-import path from 'path';
 import cors from 'cors';
+import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import pg from 'pg';
+import jwt from 'jsonwebtoken';
 
 
 
 
-
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config();
 const app = express();
 const port = process.env.PORT || 4000;
 
-app.use(express.json()); // Middleware to parse JSON bodies
+dotenv.config();
+
+const { Pool } = pg;
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const jwtSecret = process.env.JWT_SECRET;
 
 
-const corsOptions = {
+
+app.use(cors({
   origin: 'http://localhost:3000',  
-  credentials: true, 
-};
+  credentials: true,
+}));
+app.use(express.json());
+app.use(cookieParser());
 
 
-
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use((req, res, next) => {
@@ -41,17 +36,29 @@ app.use((req, res, next) => {
 });
 
 // Test route for fetching cuisines
-app.post('/api/my-recipes/save', authenticateToken, async (req, res) => {
-    const userId = req.user.id;
-    const recipe = req.body.recipe;
+app.post('/login', async (req, res) => {
+    console.log("Attempting to log in", req.body);
 
+    const { email, password } = req.body;
     try {
-        const recipeId = await saveAIGeneratedRecipe(recipe);
-        await linkRecipeToUser(userId, recipeId);
-        res.send('Recipe saved successfully');
+        const userQuery = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        if (userQuery.rows.length === 0) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        const user = userQuery.rows[0];
+        // Ensure password is a string to avoid SCRAM authentication errors
+        const isValidPassword = await bcrypt.compare(String(password), user.password);
+        if (!isValidPassword) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1 day' });
+        res.cookie('token', token, { httpOnly: true, path: '/', maxAge: 24 * 60 * 60 * 1000, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax' });
+        res.status(200).json({ message: "Login successful", user: { id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email, username: user.username } });
     } catch (error) {
-        console.error('Error saving recipe:', error);
-        res.status(500).send('Failed to save recipe');
+        console.error("Login error:", error);
+        res.status(500).json({ message: 'An error occurred during login.' });
     }
 });
 

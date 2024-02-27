@@ -11,7 +11,7 @@ const router = express.Router();
 
 
 
-router.get('/cuisines', async (req, res) => {
+router.get('/recipes/cuisines', async (req, res) => {
     try {
         const result = await pool.query('SELECT name FROM cuisines ORDER BY name');
         res.json(result.rows);
@@ -48,46 +48,94 @@ router.get('/recipes/latest', async (req, res) => {
     }
 });
 
-router.get('/recipes/by-cuisine/:cuisine', async (req, res) => {
+router.get('/recipes/latest/by-cuisine/:cuisine', async (req, res) => {
     const { cuisine } = req.params;
     try {
-        const result = await pool.query(`
-            SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username
-            FROM recipes
-            JOIN cuisines ON recipes.cuisine_id = cuisines.id
-            JOIN users ON recipes.user_id = users.id
-            WHERE cuisines.name = $1
-            ORDER BY recipes.created_at DESC`, [cuisine]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'No recipes found for this cuisine.' });
-        }
-        res.json(result.rows);
+      const queryText = `
+        SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username
+        FROM recipes
+        JOIN cuisines ON recipes.cuisine_id = cuisines.id
+        JOIN users ON recipes.user_id = users.id
+        WHERE cuisines.name = $1
+        ORDER BY recipes.created_at DESC;
+      `;
+      const result = await pool.query(queryText, [cuisine]);
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: 'No recipes found for this cuisine.' });
+      }
+      res.json(result.rows);
     } catch (error) {
-        console.error('Error fetching recipes by cuisine:', error);
-        res.status(500).json({ message: 'An error occurred while fetching recipes by cuisine.' });
+      console.error('Error fetching recipes by cuisine:', error);
+      res.status(500).json({ message: 'An error occurred while fetching recipes by cuisine.' });
     }
+  });
+  
+ router.get('/recipes/latest/by-meal-type/:mealType', async (req, res) => {
+  const { mealType } = req.params;
+  try {
+    const queryText = `
+    SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username, mealtypes.name AS meal_type_name
+    FROM recipes
+    JOIN cuisines ON recipes.cuisine_id = cuisines.id
+    JOIN users ON recipes.user_id = users.id
+    JOIN mealtypes ON recipes.meal_type_id = mealtypes.id  
+    WHERE mealtypes.name = $1
+    ORDER BY recipes.created_at DESC;
+    
+    `;
+    const result = await pool.query(queryText, [mealType]);
+    if (result.rows.length === 0) {
+        return res.status(200).json([]); // Change to return an empty array with a 200 OK status
+    }
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching recipes by meal type:', error);
+    res.status(500).json({ message: 'An error occurred while fetching recipes by meal type.' });
+  }
 });
 
-router.get('/recipes/by-meal-type/:mealType', async (req, res) => {
-    const { mealType } = req.params;
-    try {
-        const result = await pool.query(`
-            SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username, mealtypes.name AS meal_type_name
-            FROM recipes
-            JOIN cuisines ON recipes.cuisine_id = cuisines.id
-            JOIN users ON recipes.user_id = users.id
-            JOIN mealtypes ON recipes.meal_type_id = mealtypes.id  
-            WHERE mealtypes.name = $1
-            ORDER BY recipes.created_at DESC`, [mealType]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'No recipes found for this meal type.' });
-        }
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error fetching recipes by meal type:', error);
-        res.status(500).json({ message: 'An error occurred while fetching recipes by meal type.' });
-    }
-});
+
+// router.get('/recipes/latest/by-cuisine/:cuisine', async (req, res) => {
+//     const { cuisine } = req.params;
+//     try {
+//         const result = await pool.query(`
+//             SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username
+//             FROM recipes
+//             JOIN cuisines ON recipes.cuisine_id = cuisines.id
+//             JOIN users ON recipes.user_id = users.id
+//             WHERE cuisines.name = $1
+//             ORDER BY recipes.created_at DESC`, [cuisine]);
+//         if (result.rows.length === 0) {
+//             return res.status(404).json({ message: 'No recipes found for this cuisine.' });
+//         }
+//         res.json(result.rows);
+//     } catch (error) {
+//         console.error('Error fetching recipes by cuisine:', error);
+//         res.status(500).json({ message: 'An error occurred while fetching recipes by cuisine.' });
+//     }
+// });
+
+// router.get('/recipes/latest/by-meal-type/:mealType', async (req, res) => {
+//     const { mealType } = req.params;
+//     try {
+//         const result = await pool.query(`
+//             SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username, mealtypes.name AS meal_type_name
+//             FROM recipes
+//             JOIN cuisines ON recipes.cuisine_id = cuisines.id
+//             JOIN users ON recipes.user_id = users.id
+//             JOIN mealtypes ON recipes.meal_type_id = mealtypes.id  
+//             WHERE mealtypes.name = $1
+//             ORDER BY recipes.created_at DESC`, [mealType]);
+//         if (result.rows.length === 0) {
+//             return res.status(404).json({ message: 'No recipes found for this meal type.' });
+//         }
+//         res.json(result.rows);
+//     } catch (error) {
+//         console.error('Error fetching recipes by meal type:', error);
+//         res.status(500).json({ message: 'An error occurred while fetching recipes by meal type.' });
+//     }
+// });
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
@@ -161,51 +209,6 @@ router.post('/my-recipes/save', async (req, res) => {
     }
 });
 
-  router.get('/recipes/by-cuisine/:cuisine', async (req, res) => {
-    const { cuisine } = req.params;
-    try {
-      const queryText = `
-        SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username
-        FROM recipes
-        JOIN cuisines ON recipes.cuisine_id = cuisines.id
-        JOIN users ON recipes.user_id = users.id
-        WHERE cuisines.name = $1
-        ORDER BY recipes.created_at DESC;
-      `;
-      const result = await pool.query(queryText, [cuisine]);
-      if (result.rows.length === 0) {
-        return res.status(404).json({ message: 'No recipes found for this cuisine.' });
-      }
-      res.json(result.rows);
-    } catch (error) {
-      console.error('Error fetching recipes by cuisine:', error);
-      res.status(500).json({ message: 'An error occurred while fetching recipes by cuisine.' });
-    }
-  });
-  
- router.get('/recipes/by-meal-type/:mealType', async (req, res) => {
-  const { mealType } = req.params;
-  try {
-    const queryText = `
-    SELECT recipes.*, cuisines.name AS cuisine_name, users.username AS username, mealtypes.name AS meal_type_name
-    FROM recipes
-    JOIN cuisines ON recipes.cuisine_id = cuisines.id
-    JOIN users ON recipes.user_id = users.id
-    JOIN mealtypes ON recipes.meal_type_id = mealtypes.id  
-    WHERE mealtypes.name = $1
-    ORDER BY recipes.created_at DESC;
-    
-    `;
-    const result = await pool.query(queryText, [mealType]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'No recipes found for this meal type.' });
-    }
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching recipes by meal type:', error);
-    res.status(500).json({ message: 'An error occurred while fetching recipes by meal type.' });
-  }
-});
 
 router.post('/recipes/:id/comments', authenticateToken, async (req, res) => {
     const recipeId = req.params.id; // Make sure this is correctly extracting the 'id'
