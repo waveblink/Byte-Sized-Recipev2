@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ThemeProvider, createTheme, CssBaseline, useThemeProps, Grid, Card, CardContent, Typography, Rating, Button, IconButton, CardHeader, GlobalStyles } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import CommentsSection from './CommentsSection';
+import axios from 'axios';
 
 
 const theme = createTheme({
@@ -38,20 +39,20 @@ function RecipeView(){
     const {id} = useParams();
     const [recipe, setRecipe] = useState(null);
 
-    useEffect(() =>{
-        const fetchRecipe = async () => {
-        try {
-            const response = await fetch(`http://localhost:4000/api/recipes/${id}`);
-            const data = await response.json();
-            setRecipe(data);
-            console.log(recipe);
-        } catch (error) {
-            console.error('Error fetching recipe:', error);
-        }
-    };
+    useEffect(() => {
+      const fetchRecipe = async () => {
+          try {
+              // Axios automatically handles the response as JSON, so no need to call .json() on the response.
+              const response = await axios.get(`http://localhost:4000/api/recipes/${recipeId}`);
+              setRecipe(response.data); // response.data is the JSON response body
+          } catch (error) {
+              console.error('Error fetching recipe:', error);
+          }
+      };
 
-    fetchRecipe();
-},[id]);
+      fetchRecipe();
+  }, [recipeId]); // useEffect dependency array includes recipeId to refetch if the ID changes
+
 
 if (!recipe){
     return <div>Loading...</div>;

@@ -235,22 +235,22 @@ router.post('/my-recipes/save', async (req, res) => {
 });
 
 
-// router.post('/recipes/:id/comments', authenticateToken, async (req, res) => {
-//     const recipeId = req.params.id; // Make sure this is correctly extracting the 'id'
-//     const userId = req.user.id;
-//     const { comment } = req.body;
+router.post('/recipes/:id/comments', authenticateToken, async (req, res) => {
+    const recipeId = req.params.id; // Make sure this is correctly extracting the 'id'
+    const userId = req.user.id;
+    const { comment } = req.body;
     
-//     try {
-//         const result = await pool.query(
-//             `INSERT INTO comments (recipe_id, user_id, comment) VALUES ($1, $2, $3) RETURNING *`,
-//             [recipeId, userId, comment]
-//         );
-//         res.status(201).json(result.rows[0]);
-//     } catch (error) {
-//         console.error('Error posting comment:', error);
-//         res.status(500).json({ message: 'Failed to post comment' });
-//     }
-// });
+    try {
+        const result = await pool.query(
+            `INSERT INTO comments (recipe_id, user_id, comment) VALUES ($1, $2, $3) RETURNING *`,
+            [recipeId, userId, comment]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Error posting comment:', error);
+        res.status(500).json({ message: 'Failed to post comment' });
+    }
+});
 
 router.get('/recipes/:id/comments', authenticateToken, async (req, res) => {
     const {id: recipeId} = req.params;

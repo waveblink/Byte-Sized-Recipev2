@@ -3,6 +3,7 @@ import { Button, TextField, Box, Typography, List, ListItem, ListItemText, Card,
 import MoreVert from '@mui/icons-material/MoreVert';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import axios from 'axios';
 
 function CommentsSection({ recipeId }) {
     const [comments, setComments] = useState([]);
@@ -16,12 +17,13 @@ function CommentsSection({ recipeId }) {
         const fetchComments = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://localhost:4000/api/recipes/${recipeId}/comments`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch comments');
-                }
-                const data = await response.json();
-                setComments(data);
+                // Ensure you're using template literals correctly with backticks (`) 
+                const response = await axios.get(`http://localhost:4000/api/recipes/${recipeId}/comments`, {
+                    withCredentials: true
+                });
+    
+                // Axios automatically parses the JSON, so you can directly use the data property.
+                setComments(response.data);
             } catch (error) {
                 console.error('Failed to fetch comments:', error);
                 setError('Failed to fetch comments');
@@ -29,7 +31,7 @@ function CommentsSection({ recipeId }) {
                 setLoading(false);
             }
         };
-
+    
         fetchComments();
     }, [recipeId]);
 
@@ -46,9 +48,8 @@ function CommentsSection({ recipeId }) {
 
     const deleteComment = async (commentId) => {
         try {
-            const response = await fetch(`http://localhost:4000/api/recipes/${recipeId}/comments/${commentId}`, {
-                method: 'DELETE',
-                credentials: 'include',
+            const response = await axios.delete(`http://localhost:4000/api/recipes/${recipeId}/comments/${commentId}`, {
+                withCredentials: true
             });
 
             if (!response.ok) {
@@ -68,18 +69,16 @@ function CommentsSection({ recipeId }) {
         e.preventDefault();
         setLoading(true);
         setError('');
+    
         try {
-            const response = await fetch(`http://localhost:4000/api/recipes/${recipeId}/comments`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ comment: newComment }),
-                credentials: 'include',
+            // With Axios, you don't need to specify headers or stringify the body for JSON data.
+            // Axios automatically sets the content-type to 'application/json' and converts the JavaScript object to JSON.
+            const response = await axios.post(`http://localhost:4000/api/recipes/${recipeId}/comments`, { comment: newComment }, {
+                withCredentials: true
             });
-
-            if (!response.ok) {
-                throw new Error('Failed to submit comment');
-            }
-            const addedComment = await response.json();
+    
+            // Axios automatically parses the JSON response, so you can directly use the data property.
+            const addedComment = response.data;
             setComments(prev => [addedComment, ...prev]);
             setNewComment('');
         } catch (error) {
@@ -89,6 +88,7 @@ function CommentsSection({ recipeId }) {
             setLoading(false);
         }
     };
+    
 
       if(loading) return <Typography>Loading comments...</Typography>;
       if(error) return <Typography color="error">{error}</Typography>;
@@ -96,7 +96,22 @@ function CommentsSection({ recipeId }) {
       return (
         <Box sx={{ mt: 4 }}>
             <Typography variant="h6" sx={{ mb: 2 }}>Comments</Typography>
-            {/* Comment submission form */}
+            {/* Comment submission form */
+            <form onSubmit={submitComment} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Write a comment..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                multiline
+                rows={2}
+                maxRows={4}
+            />
+            <Button type="submit" variant="contained" color="primary">
+                Post
+            </Button>
+        </form>}
             {comments.map((comment) => (
                 <Card key={comment.id} sx={{ mb: 2 }}>
                     <CardHeader
