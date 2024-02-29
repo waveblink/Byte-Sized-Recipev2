@@ -61,7 +61,7 @@ router.get('/recipes/latest/by-cuisine/:cuisine', async (req, res) => {
       `;
       const result = await pool.query(queryText, [cuisine]);
       if (result.rows.length === 0) {
-        return res.status(404).json({ message: 'No recipes found for this cuisine.' });
+        return res.status(200).json([]); // Change to return an empty array with a 200 OK status
       }
       res.json(result.rows);
     } catch (error) {
@@ -95,6 +95,31 @@ router.get('/recipes/latest/by-cuisine/:cuisine', async (req, res) => {
   }
 });
 
+router.get('/recipes/:id(\\d+)', async (req, res) => {
+    const recipeId = req.params.id;
+
+    try {
+        const result = await pool.query(`
+            SELECT recipes.*, 
+                   cuisines.name AS cuisine_name, 
+                   users.username AS username, 
+                   mealTypes.name AS meal_type_name
+            FROM recipes 
+            JOIN cuisines ON recipes.cuisine_id = cuisines.id
+            JOIN users ON recipes.user_id = users.id
+            JOIN mealTypes ON recipes.meal_type_id = mealTypes.id
+            WHERE recipes.id = $1
+        `, [recipeId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({message: "Recipe not found"});
+        }
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error getting recipe:', error);
+        res.status(500).json({ message: 'An error occurred while getting the recipe.' });
+    }
+});
 
 // router.get('/recipes/latest/by-cuisine/:cuisine', async (req, res) => {
 //     const { cuisine } = req.params;
@@ -210,22 +235,22 @@ router.post('/my-recipes/save', async (req, res) => {
 });
 
 
-router.post('/recipes/:id/comments', authenticateToken, async (req, res) => {
-    const recipeId = req.params.id; // Make sure this is correctly extracting the 'id'
-    const userId = req.user.id;
-    const { comment } = req.body;
+// router.post('/recipes/:id/comments', authenticateToken, async (req, res) => {
+//     const recipeId = req.params.id; // Make sure this is correctly extracting the 'id'
+//     const userId = req.user.id;
+//     const { comment } = req.body;
     
-    try {
-        const result = await pool.query(
-            `INSERT INTO comments (recipe_id, user_id, comment) VALUES ($1, $2, $3) RETURNING *`,
-            [recipeId, userId, comment]
-        );
-        res.status(201).json(result.rows[0]);
-    } catch (error) {
-        console.error('Error posting comment:', error);
-        res.status(500).json({ message: 'Failed to post comment' });
-    }
-});
+//     try {
+//         const result = await pool.query(
+//             `INSERT INTO comments (recipe_id, user_id, comment) VALUES ($1, $2, $3) RETURNING *`,
+//             [recipeId, userId, comment]
+//         );
+//         res.status(201).json(result.rows[0]);
+//     } catch (error) {
+//         console.error('Error posting comment:', error);
+//         res.status(500).json({ message: 'Failed to post comment' });
+//     }
+// });
 
 router.get('/recipes/:id/comments', authenticateToken, async (req, res) => {
     const {id: recipeId} = req.params;

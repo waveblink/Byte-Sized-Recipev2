@@ -44,6 +44,7 @@ function RecipeView(){
             const response = await fetch(`http://localhost:4000/api/recipes/${id}`);
             const data = await response.json();
             setRecipe(data);
+            console.log(recipe);
         } catch (error) {
             console.error('Error fetching recipe:', error);
         }

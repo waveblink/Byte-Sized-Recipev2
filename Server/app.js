@@ -31,7 +31,6 @@ app.use('/api', recipeRoutes);
 
 app.use('/api', recipeRoutes);
 
-app.use('/api/recipes', recipeRoutes);
 
 
 app.use('/validate', authRoutes);
