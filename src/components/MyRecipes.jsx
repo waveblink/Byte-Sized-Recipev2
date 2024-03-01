@@ -22,7 +22,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { Link } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
-
+import axios from 'axios';
 
 
 const theme = createTheme({
@@ -61,70 +61,38 @@ export default function MyRecipes() {
   const [options, setOptions] = useState([])
   const [isFetching, setIsFetching] = useState(false);
   const [noRecipesFound, setNoRecipesFound] = useState(false);
-  const fetchRecipes = async () => {
-    try {
-      let url = 'http://localhost:4000/api/my-recipes';
-      // Include credentials: 'include' if your API expects credentials to be sent along with the request
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include', // Necessary for cookies to be sent and received
-        headers: {
-          'Content-Type': 'application/json',
-          // Assuming the token is stored in a cookie and accessible via document.cookie
-          // 'Authorization': `Bearer ${token}`,
-        },
-      });
   
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-  
-      const data = await response.json();
-  
-      if (data.length === 0) {
-        setNoRecipesFound(true);
-      } else {
-        setRecipes(data);
-        setNoRecipesFound(data.length === 0);
-      }
-    } catch (error) {
-      console.error('Error fetching recipes: ', error);
-    } finally {
-      setIsFetching(false);
-    }
-  };
-
-
-  const deleteRecipe = async (recipeId) => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/my-recipes/${recipeId}`, {
-        method: 'DELETE',
-
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete the recipe. ');
-      }
-
-      setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe.id !== recipeId));
-
-      alert('Recipe deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting recipe: ', error);
-      alert('An error occurred while deleting the recipe.');
-      
-    }
-  }
   
   useEffect(() => {
-    // Fetch options based on sortCategory
+    const fetchRecipes = async () => {
+      setIsFetching(true);
+      try {
+        let url = 'http://localhost:4000/api/my-recipes';
+        const response = await axios.get(url, { withCredentials: true });
+        const data = response.data;
+
+        if (data.length === 0) {
+          setNoRecipesFound(true);
+        } else {
+          setRecipes(data);
+          setNoRecipesFound(false);
+        }
+      } catch (error) {
+        console.error('Error fetching recipes: ', error);
+      } finally {
+        setIsFetching(false);
+      }
+    };
+
+    fetchRecipes();
+  }, []);
+
+  useEffect(() => {
     const fetchOptions = async () => {
       let url = `http://localhost:4000/api/my-recipes/${sortCategory === 'cuisine' ? 'cuisines' : 'mealTypes'}`;
       try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch options');
-        const data = await response.json();
-        setOptions(data); // Assuming the API returns an array of options
+        const response = await axios.get(url, { withCredentials: true });
+        setOptions(response.data);
       } catch (error) {
         console.error(`Error fetching options for ${sortCategory}: `, error);
       }
@@ -133,20 +101,28 @@ export default function MyRecipes() {
     if (sortCategory) {
       fetchOptions();
     } else {
-      setOptions([]); // Clear options if no sortCategory is selected
+      setOptions([]);
     }
   }, [sortCategory]);
 
   const handleSortCategoryChange = (event) => {
-    console.log("Sort Category Changed:", event.target.value);
     setSortCategory(event.target.value);
-    setSelectedOption(''); // Reset selectedOption when sortCategory changes
+    setSelectedOption('');
   };
 
   const handleOptionChange = (event) => {
-    console.log("Option Changed:", event.target.value);
     setSelectedOption(event.target.value);
-    // Assume fetchSortedRecipes function will use selectedOption to fetch and update recipes
+  };
+
+  const deleteRecipe = async (recipeId) => {
+    try {
+      await axios.delete(`http://localhost:4000/api/my-recipes/${recipeId}`, { withCredentials: true });
+      setRecipes(prevRecipes => prevRecipes.filter(recipe => recipe.id !== recipeId));
+      alert('Recipe deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting recipe: ', error);
+      alert('An error occurred while deleting the recipe.');
+    }
   };
 
   return (
@@ -251,3 +227,4 @@ export default function MyRecipes() {
     </ThemeProvider>
   );
 }
+

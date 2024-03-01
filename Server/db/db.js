@@ -36,34 +36,24 @@ export const query = async (text, params) => {
  * @returns {Promise<void>}
  */
 export async function saveAIGeneratedRecipe(recipe) {
-  const { name, cuisineId, mealTypeId, ingredients, instructions, rating, userId, nutritionFacts } = recipe; // Assuming these are the fields you have
+  const { name, cuisineId, mealTypeId, ingredients, instructions, userId, nutritionFacts } = recipe;
+
+  // Validate required fields
+  if (!name || !cuisineId || !mealTypeId || !ingredients || !instructions || !userId || !nutritionFacts) {
+    throw new Error("Missing required recipe fields");
+  }
 
   const sql = `
-      INSERT INTO ai_generated_recipes (name, cuisine_id, meal_type_id, ingredients, instructions, rating, user_id, nutrition_facts) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id
+      INSERT INTO ai_generated_recipes (name, cuisine_id, meal_type_id, ingredients, instructions, user_id, nutrition_facts) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id
   `;
 
-  const values = [name, cuisineId, mealTypeId, ingredients, instructions, rating, userId, nutritionFacts];
+  const values = [name, cuisineId, mealTypeId, ingredients, instructions, userId, nutritionFacts];
 
   try {
       const result = await query(sql, values);
       return result.rows[0].id; // Return the ID of the newly inserted recipe
   } catch (error) {
       console.error('Error saving AI-generated recipe to database:', error);
-      throw error;
-  }
-}
-
-export async function linkRecipeToUser(userId, recipeId) {
-  const sql = `
-      INSERT INTO user_saved_recipes (user_id, recipe_id) VALUES ($1, $2)
-  `;
-
-  const values = [userId, recipeId];
-
-  try {
-      await query(sql, values);
-  } catch (error) {
-      console.error('Error linking recipe to user:', error);
       throw error;
   }
 }
@@ -82,5 +72,19 @@ export async function getRecipesByUserId(userId) {
   } catch (error) {
       console.error('Error fetching recipes from database:', error);
       throw error; // Rethrow the error to be caught by the caller
+  }
+}
+
+export async function linkRecipeToUser(userId, recipeId) {
+  const sql = `
+      INSERT INTO user_saved_recipes (user_id, recipe_id) VALUES ($1, $2)
+  `;
+
+  try {
+      await query(sql, [userId, recipeId]);
+      console.log(`Recipe ${recipeId} linked to user ${userId} successfully.`);
+  } catch (error) {
+      console.error('Error linking recipe to user in database:', error);
+      throw error;
   }
 }

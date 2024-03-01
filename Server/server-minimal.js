@@ -1,68 +1,46 @@
-import bcrypt from 'bcrypt';
 import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import cookieParser from 'cookie-parser';
-import pg from 'pg';
-import jwt from 'jsonwebtoken';
-
-
-
+import { query, pool } from './db/db.js';
 
 const app = express();
-const port = process.env.PORT || 4000;
+const port = 5000;
 
-dotenv.config();
-
-const { Pool } = pg;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const jwtSecret = process.env.JWT_SECRET;
-
-
-
-app.use(cors({
-  origin: 'http://localhost:3000',  
-  credentials: true,
-}));
-app.use(express.json());
-app.use(cookieParser());
-
-
-app.use(express.json());
-app.use(cookieParser());
-app.use((req, res, next) => {
-  console.log(`Incoming request: ${req.method} ${req.path}`);
-  next();
-});
-
-// Test route for fetching cuisines
-app.post('/login', async (req, res) => {
-    console.log("Attempting to log in", req.body);
-
-    const { email, password } = req.body;
+// Simulate database function
+async function getMealTypeIdByName(mealTypeName) {
+    console.log("Fetching meal type ID for:", mealTypeName);
     try {
-        const userQuery = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
-        if (userQuery.rows.length === 0) {
-            return res.status(400).json({ message: "Invalid credentials" });
+        // Assuming 'pool' is your database connection pool
+        const result = await pool.query('SELECT id FROM mealtypes WHERE name = $1', [mealTypeName.trim()]);
+        if (result.rows.length > 0) {
+            console.log("Found meal type ID:", result.rows[0].id);
+            return result.rows[0].id;
+        } else {
+            console.log("No matching meal type found for:", mealTypeName);
+            return null;
         }
-
-        const user = userQuery.rows[0];
-        // Ensure password is a string to avoid SCRAM authentication errors
-        const isValidPassword = await bcrypt.compare(String(password), user.password);
-        if (!isValidPassword) {
-            return res.status(401).json({ message: "Invalid credentials" });
-        }
-
-        const token = jwt.sign({ userId: user.id }, jwtSecret, { expiresIn: '1 day' });
-        res.cookie('token', token, { httpOnly: true, path: '/', maxAge: 24 * 60 * 60 * 1000, secure: process.env.NODE_ENV === 'production', sameSite: 'Lax' });
-        res.status(200).json({ message: "Login successful", user: { id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email, username: user.username } });
     } catch (error) {
-        console.error("Login error:", error);
-        res.status(500).json({ message: 'An error occurred during login.' });
+        console.error('Error fetching meal type ID:', error);
+        return null;
+    }
+}
+
+
+app.use(express.json()); // Middleware to parse JSON bodies
+
+app.post('/test-endpoint', async (req, res) => {
+    const { mealType, user } = req.body; // Expecting mealType and user in the request body
+
+    try {
+        const mealTypeId = await getMealTypeIdByName(mealType);
+        const userId = user ? user.id : undefined; // Simulate getting userId
+
+        console.log("Meal Type ID:", mealTypeId, "User ID:", userId);
+        res.json({ mealTypeId, userId });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).send('Server error');
     }
 });
 
-
 app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`);
+    console.log(`Server listening at http://localhost:${port}`);
 });

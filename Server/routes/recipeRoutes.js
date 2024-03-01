@@ -164,21 +164,143 @@ router.get('/recipes/:id(\\d+)', async (req, res) => {
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
+async function getCuisineIdByName(cuisineName) {
+    console.log("Looking up ID for cuisine:", cuisineName);
+
+    try {
+        // Assuming you're using a SQL-based database
+        const result = await pool.query("SELECT id FROM cuisines WHERE name = $1", [cuisineName]);
+        if (result.rows.length > 0) {
+            console.log("Cuisine ID found:", result.rows[0].id);
+            return result.rows[0].id;
+        } else {
+            console.log("No ID found for cuisine:", cuisineName);
+            return null;
+        }
+    } catch (error) {
+        console.error("Error in getCuisineIdByName:", error);
+        // Handle error appropriately
+    }
+}
+async function getMealTypeIdByName(mealTypeName) {
+    console.log("Fetching meal type ID for:", mealTypeName);
+    try {
+        // Assuming 'pool' is your database connection pool
+        const result = await pool.query('SELECT id FROM mealtypes WHERE name = $1', [mealTypeName.trim()]);
+        if (result.rows.length > 0) {
+            console.log("Found meal type ID:", result.rows[0].id);
+            return result.rows[0].id;
+        } else {
+            console.log("No matching meal type found for:", mealTypeName);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching meal type ID:', error);
+        return null;
+    }
+}
+
+
+
+
+
+
+function extractMealTypeIdFromLine(line) {
+    const mealTypeStart = line.indexOf('[Meal Type:]') + '[Meal Type:]'.length;
+    const mealTypeEnd = line.length;  // Assuming the meal type is at the end of the line
+    const mealType = line.slice(mealTypeStart, mealTypeEnd).trim();
+
+    console.log("Extracted meal type:", mealType);  // Log the extracted meal type
+
+    // Assuming your getMealTypeIdByName function can handle the extracted meal type correctly
+    return getMealTypeIdByName(mealType);
+}
+
+
+
+// extractMealTypeIdFromLine('[Meal Type:] Dinner ');
+
+async function transformResponseToRecipe(botResponse, cuisine) {
+    const lines = botResponse.split('\n');
+
+    // Extract the recipe name
+    const nameLine = lines.find(line => line.trim().startsWith("[Name:]"));
+    const name = nameLine ? nameLine.split("[Name:")[1].trim() : 'Default Recipe Name';
+    
+    // Extract ingredients
+    const ingredientsStart = lines.findIndex(line => line.trim().startsWith("[Ingredients:]"));
+    const ingredientsEnd = lines.findIndex((line, idx) => idx > ingredientsStart && line.trim().startsWith("[Instructions:]"));
+    const ingredients = lines.slice(ingredientsStart + 1, ingredientsEnd).join('\n').trim();
+
+    // Define the start of instructions
+    const instructionsStart = ingredientsEnd;
+
+    let instructions = '';
+    let nutritionFacts = '';
+    let isNutritionSection = false;
+
+    for (let i = instructionsStart + 1; i < lines.length; i++) {
+        if (lines[i].trim().startsWith("[Macronutrient Breakdown:]")) {
+            isNutritionSection = true;
+            continue;
+        }
+
+        if (isNutritionSection) {
+            nutritionFacts += lines[i].trim() + '\n';
+        } else {
+            instructions += lines[i].trim() + '\n';
+        }
+    }
+
+    // Extract meal type and cuisine ID
+    let mealTypeId;
+    for (const line of lines) {
+        if (line.includes('[Meal Type:]')) {
+            mealTypeId = await extractMealTypeIdFromLine(line);
+            break;  // Exit the loop once we've found and processed the meal type
+        }
+    }    
+
+    const cuisineId = await getCuisineIdByName(cuisine);
+
+    return {
+        name,
+        cuisineId,
+        mealTypeId,
+        ingredients,
+        instructions: instructions.trim(),
+        nutritionFacts: nutritionFacts.trim()
+    };
+}
+
+
 
 router.post('/chatbot', async (req, res) => {
     const userQuery = req.body.query;
     const cuisine = req.body.cuisine;
+    const mealType = req.body.mealTypeId;
+    
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4-turbo-preview",
             messages: [
-                { role: "system", content: `You are a chatbot specialized in ${cuisine} cuisine. Method: Focus on [Ingredient details, Cooking techniques, Regional specialties] Structure: [Ingredient exploration] + [Technique refinement] + [Regional emphasis] + [Measurements in grams only] Goal: Elevate [Culinary knowledge], [Recipe authenticity] + [give the macronutrient breakdown, in the form of Calories: Protein: Carbs: Fats:].` },
+                { role: "system",     content: `You are a chatbot specialized in ${cuisine} cuisine. Provide a recipe that includes the following details clearly separated and marked: Name of the dish within "[Name:]", list of ingredients within "[Ingredients:]", step-by-step instructions within "[Instructions:]", type of meal within and only one of the options, Breakfast, Lunch, Dinner, Dessert, Snack, Bread, Pastry, other"[Meal Type:]", cuisine type within "[Cuisine:]", and macronutrient breakdown within "[Macronutrient Breakdown:]". Ensure each section is clearly separated by line breaks for easy parsing.
+                ` },
                 { role: "user", content: userQuery }
             ],
         }, { headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` } });
+
         if (response.data.choices && response.data.choices.length > 0) {
             const botResponse = response.data.choices[0].message.content;
-            res.json({ reply: botResponse });
+            console.log("Bot response:", botResponse);
+            const transformedRecipe = await transformResponseToRecipe(botResponse, cuisine);
+            transformedRecipe.userId = req.user?.id;
+            transformedRecipe.mealTypeId = transformedRecipe.mealTypeId || req.body.mealTypeId;
+                console.log("Transformed recipe:", transformedRecipe);
+
+                console.log("Transformed recipe with userId:", transformedRecipe);
+
+            res.json({ recipe: transformedRecipe, reply: botResponse });
         } else {
             res.status(500).send("Chatbot response was not in the expected format.");
         }
@@ -222,17 +344,44 @@ router.get('/my-recipes', authenticateToken, async (req, res) => {
     }
 });
 
-router.post('/my-recipes/save', async (req, res) => {
-    const recipe = req.body.recipe;
+router.post('/my-recipes/save', authenticateToken, async (req, res) => {
+    console.log('Received recipe:', req.body.recipe);   
+
     try {
+        let recipe = req.body.recipe;
+        
+        // Check if recipe is a string, attempt to parse it
+        if (typeof recipe === 'string') {
+            try {
+                recipe = JSON.parse(recipe);
+            } catch (error) {
+                return res.status(400).json({ message: 'Invalid recipe format' });
+            }
+        }
+
+        // Ensure recipe is now an object
+        if (typeof recipe !== 'object' || recipe === null) {
+            return res.status(400).json({ message: 'Recipe data must be an object' });
+        }
+
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ message: 'Unauthorized: User ID is missing.' });
+        }
+
+        // Add the userId to the recipe object
+        recipe.userId = userId;
+
+        // Further processing and saving the recipe...
         const recipeId = await saveAIGeneratedRecipe(recipe);
-        await linkRecipeToUser(req.user.id, recipeId);
-        res.send('Recipe saved successfully');
+        res.json({ message: 'Recipe saved successfully', recipeId });
+
     } catch (error) {
         console.error('Error saving recipe:', error);
-        res.status(500).send('Failed to save recipe');
+        res.status(500).json({ message: 'Failed to save recipe', error: error.message });
     }
 });
+
 
 
 router.post('/recipes/:id/comments', authenticateToken, async (req, res) => {
