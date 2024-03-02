@@ -120,7 +120,7 @@ const handleSubmit = async (e) => {
   console.log("Asking the chatbot...");
   setLoading(true); // Enable loading indicator
   try {
-    const response = await axios.post('http://localhost:4000/api/chatbot', { query, cuisine: selectedCuisine });
+    const response = await axios.post('http://localhost:4000/api/chatbot', { query, cuisine: selectedCuisine }, {withCredentials: true});
     if (response.data.reply) {
       setResponses([...responses, { query, response: response.data.reply }]);
       setQuery(''); // Reset query input
@@ -188,7 +188,7 @@ return (
           <Button
             variant='contained'
             color='primary'
-            onClick={()=> handleSaveRecipe(entry.response)}
+            onClick={()=> handleSaveRecipe(entry.recipe)}
           sx={{ mt: 2 }}>
             Save Recipe
           </Button>

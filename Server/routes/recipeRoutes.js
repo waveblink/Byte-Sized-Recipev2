@@ -275,10 +275,13 @@ async function transformResponseToRecipe(botResponse, cuisine) {
 
 
 
-router.post('/chatbot', async (req, res) => {
+router.post('/chatbot', authenticateToken, async (req, res) => {
     const userQuery = req.body.query;
     const cuisine = req.body.cuisine;
     const mealType = req.body.mealTypeId;
+
+    const userId = req.user.id;
+    console.log(userId);
     
     try {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -288,13 +291,15 @@ router.post('/chatbot', async (req, res) => {
                 ` },
                 { role: "user", content: userQuery }
             ],
-        }, { headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` } });
+        }, { headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+    withCredentials: true
+    });
 
         if (response.data.choices && response.data.choices.length > 0) {
             const botResponse = response.data.choices[0].message.content;
             console.log("Bot response:", botResponse);
             const transformedRecipe = await transformResponseToRecipe(botResponse, cuisine);
-            transformedRecipe.userId = req.user?.id;
+            transformedRecipe.userId = userId; 
             transformedRecipe.mealTypeId = transformedRecipe.mealTypeId || req.body.mealTypeId;
                 console.log("Transformed recipe:", transformedRecipe);
 
