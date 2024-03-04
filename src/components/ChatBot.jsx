@@ -17,60 +17,30 @@ export default function ChatBot() {
 
 
 
-  const handleSaveRecipe = async (recipe) => {
+  const handleSaveRecipe = async (recipeText) => {
     const token = Cookies.get('token');
     try {
-        console.log('Recipe to save:', recipe);
-        const response = await axios.post('http://localhost:4000/api/my-recipes/save', { recipe }, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            withCredentials: true
-        });
-
-        if (response.status === 200) {
-            alert('Recipe saved successfully!');
-        } else {
-            alert('Failed to save recipe.');
-        }
+      console.log('Recipe to save:', recipeText);
+      const response = await axios.post('http://localhost:4000/api/save-recipe', { recipeText }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        withCredentials: true
+      });
+  
+      if (response.status === 200) {
+        alert('Recipe saved successfully!');
+      } else {
+        alert('Failed to save recipe.');
+      }
     } catch (error) {
-        console.error('Error saving recipe:', error);
-        alert('An error occurred while saving the recipe.');
+      console.error('Error saving recipe:', error);
+      alert('An error occurred while saving the recipe.');
     }
-};
+  };
+  
 
 
-// const recipeData = {
-//   name: "Ratatouille",
-//   ingredients: `- 400g eggplant, cut into slices
-//   - 400g zucchini, sliced
-//   - 400g bell peppers (mix of colors), chopped
-//   - 400g ripe tomatoes, chopped
-//   - 200g onion, finely chopped
-//   - 3 cloves of garlic, minced
-//   - 60ml olive oil
-//   - 5g fresh thyme
-//   - 5g fresh basil, chopped
-//   - Salt and pepper to taste`,
-//   instructions: `
-//   1. **Preparation of Vegetables:** Begin by preparing your vegetables. Wash all the produce. Slice the eggplant and zucchini into rounds, chop the bell peppers and tomatoes, finely chop the onion, and mince the garlic.
-//   2. **Sautéing Vegetables:** In a large skillet or Dutch oven, heat half of the olive oil over medium heat. Add the eggplant and zucchini in batches, seasoning with salt and pepper. Sauté until they start to become tender and golden. Set aside.
-//   3. **Cooking the Aromatic Base:** Using the same skillet, add the remaining olive oil. Sauté the onions and bell peppers until they start to soften. Add the garlic and cook for another minute until fragrant.
-//   4. **Combining the Ratatouille:** Add the chopped tomatoes and sautéed eggplant and zucchini back into the skillet along with thyme. Stir gently to combine.
-//   5. **Simmering:** Cover and let the ratatouille simmer on low heat for about 30 minutes. Stir occasionally to prevent sticking. The vegetables should be tender and the flavors well blended.
-//   6. **Finishing Touches:** Check for seasoning and adjust with salt and pepper as needed. Stir in the fresh basil just before serving.`,
-//   cuisineId: 6,
-//   mealTypeId: 3,
-//   nutritionFacts:`**Macronutrient Breakdown:**
-
-//   - **Calories:** Approximately 120 calories per 100g serving
-//   - **Protein:** 2g
-//   - **Carbs:** 14g
-//   - **Fats:** 7g`
-//   // other expected properties
-// };
-
-// handleSaveRecipe(recipeData);
 
   const theme = createTheme({
     palette: {
@@ -186,12 +156,13 @@ return (
           {entry.response}
           </ReactMarkdown>
           <Button
-            variant='contained'
-            color='primary'
-            onClick={()=> handleSaveRecipe(entry.recipe)}
-          sx={{ mt: 2 }}>
-            Save Recipe
-          </Button>
+  variant='contained'
+  color='primary'
+  onClick={() => handleSaveRecipe(entry.response)} // Ensure this is the correct data structure
+  sx={{ mt: 2 }}
+>
+  Save Recipe
+</Button>
          </Paper>
           ))}
           

@@ -4,7 +4,8 @@ import axios from "axios";
 import authenticateToken from '../middleware/authenticateToken.js';
 import { getRecipesByUserId } from '../db/db.js';
 import { saveAIGeneratedRecipe } from '../db/db.js';
-import { linkRecipeToUser } from '../db/db.js';
+import { saveRecipeAndUserMapping } from '../db/db.js';
+import {saveRecipe} from '../db/db.js';
 
 const router = express.Router();
 
@@ -224,8 +225,9 @@ async function transformResponseToRecipe(botResponse, cuisine) {
     const lines = botResponse.split('\n');
 
     // Extract the recipe name
-    const nameLine = lines.find(line => line.trim().startsWith("[Name:]"));
-    const name = nameLine ? nameLine.split("[Name:")[1].trim() : 'Default Recipe Name';
+    const nameLine = lines.find(line => line.includes("[Name:]"));
+    const name = nameLine ? nameLine.slice(7).trim() : 'Default Recipe Name';
+
     
     // Extract ingredients
     const ingredientsStart = lines.findIndex(line => line.trim().startsWith("[Ingredients:]"));
@@ -287,7 +289,7 @@ router.post('/chatbot', authenticateToken, async (req, res) => {
         const response = await axios.post('https://api.openai.com/v1/chat/completions', {
             model: "gpt-4-turbo-preview",
             messages: [
-                { role: "system",     content: `You are a chatbot specialized in ${cuisine} cuisine. Provide a recipe that includes the following details clearly separated and marked: Name of the dish within "[Name:]", list of ingredients within "[Ingredients:]", step-by-step instructions within "[Instructions:]", type of meal within and only one of the options, Breakfast, Lunch, Dinner, Dessert, Snack, Bread, Pastry, other"[Meal Type:]", cuisine type within "[Cuisine:]", and macronutrient breakdown within "[Macronutrient Breakdown:]". Ensure each section is clearly separated by line breaks for easy parsing.
+                { role: "system",     content: `You are a chatbot specialized in ${cuisine} cuisine. Provide a recipe that includes the following details clearly separated and marked: Name of the dish within "[Name:]", list of ingredients within "[Ingredients:]", step-by-step instructions within "[Instructions:]", type of meal within and only one of the options, Breakfast, Lunch, Dinner, Dessert, Snack, Bread, Pastry, other"[Meal Type:] REMEMBER YOU CANNOT GIVE SOMETHING MORE THAN ONE MEAL", cuisine type within "[Cuisine:]", and macronutrient breakdown within "[Macronutrient Breakdown:]". Ensure each section is clearly separated by line breaks for easy parsing.
                 ` },
                 { role: "user", content: userQuery }
             ],
@@ -349,43 +351,85 @@ router.get('/my-recipes', authenticateToken, async (req, res) => {
     }
 });
 
-router.post('/my-recipes/save', authenticateToken, async (req, res) => {
-    console.log('Received recipe:', req.body.recipe);   
+router.post('/save-recipe', authenticateToken, async (req, res) => {
+    const { recipeText } = req.body;
+    console.log('Received recipeText:', recipeText);
+
+    if (!recipeText) {
+        console.log('No text provided to extractBetweenMarkers function');
+        return res.status(400).json({ message: 'No recipe text provided' });
+      }
+    const userId = req.user.id;
+
+    const name = extractBetweenMarkers(recipeText, "[Name:]", "[Ingredients:]").trim();
+    const ingredients = extractBetweenMarkers(recipeText, "[Ingredients:]", "[Instructions:]").trim();
+    const instructions = extractBetweenMarkers(recipeText, "[Instructions:]", "[Meal Type:]").trim();
+    const mealType = extractBetweenMarkers(recipeText, "[Meal Type:]", "[Cuisine:]").trim();
+    const cuisine = extractBetweenMarkers(recipeText, "[Cuisine:]", "[Macronutrient Breakdown:]").trim();
+    const nutritionFacts = extractBetweenMarkers(recipeText, "[Macronutrient Breakdown:]", "").trim();
+
+    // Assuming you have functions to convert mealType and cuisine to their respective IDs
+    const cuisineId = await getCuisineIdByName(cuisine);
+    const mealTypeId = await getMealTypeIdByName(mealType);
+
+    const recipeData = {
+        userId,
+        name,
+        ingredients,
+        instructions,
+        mealTypeId,
+        cuisineId,
+        nutritionFacts
+    };
 
     try {
-        let recipe = req.body.recipe;
-        
-        // Check if recipe is a string, attempt to parse it
-        if (typeof recipe === 'string') {
-            try {
-                recipe = JSON.parse(recipe);
-            } catch (error) {
-                return res.status(400).json({ message: 'Invalid recipe format' });
-            }
-        }
-
-        // Ensure recipe is now an object
-        if (typeof recipe !== 'object' || recipe === null) {
-            return res.status(400).json({ message: 'Recipe data must be an object' });
-        }
-
-        const userId = req.user?.id;
-        if (!userId) {
-            return res.status(401).json({ message: 'Unauthorized: User ID is missing.' });
-        }
-
-        // Add the userId to the recipe object
-        recipe.userId = userId;
-
-        // Further processing and saving the recipe...
-        const recipeId = await saveAIGeneratedRecipe(recipe);
+        const recipeId = await saveRecipeAndUserMapping(userId, recipeData);
         res.json({ message: 'Recipe saved successfully', recipeId });
-
     } catch (error) {
         console.error('Error saving recipe:', error);
-        res.status(500).json({ message: 'Failed to save recipe', error: error.message });
+        res.status(500).send('Failed to save recipe');
     }
 });
+
+router.get('/ai-recipes/:id(\\d+)', async (req, res) => {
+    const recipeId = req.params.id;
+    console.log("Requested recipe ID:", recipeId);
+
+    try {
+        const result = await pool.query(`
+        SELECT ai_generated_recipes.*, 
+                   cuisines.name AS cuisine_name, 
+                   mealTypes.name AS meal_type_name
+            FROM ai_generated_recipes 
+            JOIN cuisines ON ai_generated_recipes.cuisine_id = cuisines.id
+            JOIN mealTypes ON ai_generated_recipes.meal_type_id = mealTypes.id
+            WHERE ai_generated_recipes.id = $1
+        `, [recipeId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({message: "Recipe not found"});
+        }
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error getting recipe:', error);
+        res.status(500).json({ message: 'An error occurred while getting the recipe.' });
+    }
+});
+
+
+function extractBetweenMarkers(text, startMarker, endMarker) {
+    if (!text) {
+        console.error('No text provided to extractBetweenMarkers function');
+        return '';
+    }
+    const startIndex = text.indexOf(startMarker) + startMarker.length;
+    const endIndex = endMarker ? text.indexOf(endMarker, startIndex) : text.length;
+    if (startIndex === -1 || endIndex === -1) {
+        console.error('Markers not found in text', { startMarker, endMarker });
+        return '';
+    }
+    return text.slice(startIndex, endIndex).trim();
+}
 
 
 

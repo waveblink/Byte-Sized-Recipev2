@@ -215,8 +215,8 @@ export default function Cookbook() {
         </FormControl>
       )}
     </Box>
-    <Grid container spacing={2} sx={{ mt: 4 }}>
-  {isFetching && (
+    <Grid container spacing={2} sx={{ mt: 4, p: 2 }}> {/* Adds padding around the entire grid */}
+      {isFetching && (
     <Grid item xs={12}>
       <Box display="flex" justifyContent="center">
         <CircularProgress />

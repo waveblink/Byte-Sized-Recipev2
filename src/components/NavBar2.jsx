@@ -78,8 +78,8 @@ const logOut = async () => {
             {user ? (
                 
                 <>
-                    <Button component={Link} to="/my-recipes" color = "inherit">{user.username}</Button>
-                    <Button color="inherit"
+                    <Button component={Link} to="/my-recipes" sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}>{user.username}</Button>
+                    <Button sx={{ color: 'orange', textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                     onClick={logOut}>Logout</Button>
                 </>
                 ) : (

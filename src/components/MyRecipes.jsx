@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+
 import { 
   ThemeProvider, createTheme, CssBaseline, Typography, Box, Grid, 
   Card, CardHeader, CardMedia, CardContent, Button, IconButton, CircularProgress 
@@ -26,7 +28,7 @@ export default function MyRecipes() {
     const fetchRecipes = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('http://localhost:3000/api/my-recipes', { withCredentials: true });
+        const response = await axios.get('http://localhost:4000/api/my-recipes', { withCredentials: true });
         setRecipes(response.data);
       } catch (error) {
         console.error('Error fetching recipes:', error);
@@ -64,10 +66,15 @@ export default function MyRecipes() {
           recipes.map(recipe => (
             <Grid item xs={12} sm={6} md={4} key={recipe.id}>
               <Card>
-                <CardHeader title={recipe.name} subheader={`Cuisine: ${recipe.cuisine}`} />
+                <CardHeader title={recipe.name} subheader={`Cuisine: ${recipe.cuisine_name}`} />
                 <CardMedia image="/placeholder.jpg" title="Recipe Image" />
                 <CardContent>
-                  <Button size="small" color="primary">
+                  <Button 
+                  size="small" 
+                  color="primary"
+                  component={Link} 
+                   to={`/ai-recipe/${recipe.id}`}
+                   >
                     View
                   </Button>
                   <IconButton size="small" onClick={() => deleteRecipe(recipe.id)}>

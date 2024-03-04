@@ -5,6 +5,10 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Link from '@mui/material/Link';
+import FooterIcons from './FooterIcons';
+import { FaGithub, FaLinkedin, FaEnvelope } from 'react-icons/fa';
+import Copyright2 from './Copyright2';
+
 
 function Copyright() {
   return (
@@ -39,6 +43,8 @@ const theme = createTheme({
   },
 });
 
+
+
 export default function StickyFooter() {
   return (
     <ThemeProvider theme={theme}>
@@ -67,9 +73,20 @@ export default function StickyFooter() {
         >
           <Container maxWidth="sm">
             <Typography variant="body1">
-              My sticky footer can be found here.
+            <div id='contact'>
+        <div className="card w-96 bg-base-100 shadow-xl mx-auto">
+            <div className="card-body">
+                <div className="flex justify-between items-center">
+                <FooterIcons />
+                
+                
+
+                </div>
+            </div>
+        </div>
+        </div>
             </Typography>
-            <Copyright />
+            <Copyright2 />
           </Container>
         </Box>
       </Box>
