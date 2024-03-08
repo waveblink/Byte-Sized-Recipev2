@@ -53,7 +53,7 @@ export default function Album() {
   useEffect(() => {
     const fetchLatestRecipes = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/api/recipes/latest');
+        const response = await axios.get('https://byte-sized-recipev2.vercel.app/api/recipes/latest');
         setRecipes(response.data);
       } catch (error) {
         console.error('Error fetching recipes: ', error);

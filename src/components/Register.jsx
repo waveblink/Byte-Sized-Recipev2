@@ -76,7 +76,7 @@ export default function Register() {
   const handleSubmit =  async (event) => {
     event.preventDefault();
     try {
-      const response = await fetch('http://localhost:4000/api/register', {
+      const response = await fetch('https://byte-sized-recipev2.vercel.app/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,9 +215,9 @@ export default function Register() {
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="#" variant="body2">
+                {/* <Link href="#" variant="body2">
                   Already have an account? Sign in
-                </Link>
+                </Link> */}
               </Grid>
             </Grid>
           </Box>

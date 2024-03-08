@@ -43,7 +43,7 @@ function RecipeView(){
       const fetchRecipe = async () => {
           try {
               // Axios automatically handles the response as JSON, so no need to call .json() on the response.
-              const response = await axios.get(`http://localhost:4000/api/recipes/${recipeId}`);
+              const response = await axios.get(`https://byte-sized-recipev2.vercel.app/api/recipes/${recipeId}`);
               setRecipe(response.data); // response.data is the JSON response body
           } catch (error) {
               console.error('Error fetching recipe:', error);

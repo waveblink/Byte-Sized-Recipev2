@@ -73,7 +73,7 @@ function CommentsSection({ recipeId }) {
         try {
             // With Axios, you don't need to specify headers or stringify the body for JSON data.
             // Axios automatically sets the content-type to 'application/json' and converts the JavaScript object to JSON.
-            const response = await axios.post(`http://localhost:4000/api/recipes/${recipeId}/comments`, { comment: newComment }, {
+            const response = await axios.post(`https://byte-sized-recipev2.vercel.app/api/recipes/${recipeId}/comments`, { comment: newComment }, {
                 withCredentials: true
             });
     

@@ -53,7 +53,7 @@ export default function Generate() {
     event.preventDefault();
     
     try {
-      const response = await fetch('http://localhost:4000/api/submit-recipe', {
+      const response = await fetch('https://byte-sized-recipev2.vercel.app/api/submit-recipe', {
         method: 'POST',
         credentials: 'include',
         headers: {

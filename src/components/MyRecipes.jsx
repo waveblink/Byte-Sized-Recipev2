@@ -28,7 +28,7 @@ export default function MyRecipes() {
     const fetchRecipes = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get('http://localhost:4000/api/my-recipes', { withCredentials: true });
+        const response = await axios.get('https://byte-sized-recipev2.vercel.app/api/my-recipes', { withCredentials: true });
         setRecipes(response.data);
       } catch (error) {
         console.error('Error fetching recipes:', error);

@@ -21,7 +21,7 @@ export default function ChatBot() {
     const token = Cookies.get('token');
     try {
       console.log('Recipe to save:', recipeText);
-      const response = await axios.post('http://localhost:4000/api/save-recipe', { recipeText }, {
+      const response = await axios.post('https://byte-sized-recipev2.vercel.app/api/save-recipe', { recipeText }, {
         headers: {
           'Authorization': `Bearer ${token}`
         },

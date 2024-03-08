@@ -123,7 +123,7 @@ export default function Cookbook() {
 
   const deleteRecipe = async (recipeId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/recipes/${recipeId}`, {
+      const response = await fetch(`https://byte-sized-recipev2.vercel.app/api/recipes/${recipeId}`, {
         method: 'DELETE',
 
       });
