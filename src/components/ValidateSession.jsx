@@ -8,7 +8,7 @@ const ValidateSession = () => {
     useEffect(() => {
         async function validateSession() {
             try {
-                const response = await axios.get('http://localhost:4000/api/validate', {
+                const response = await axios.get('https://byte-sized-recipev2.vercel.app/api/validate', {
                     withCredentials: true, // Correct way to send cookies with Axios
                 });
 
