@@ -12,21 +12,12 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin 
-    // (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Adjust the allowed origins as per your requirements
-    const allowedOrigins = ['https://byte-sized-recipev2.vercel.app'];
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error('CORS policy violation'), false);
-    }
-  },
-  credentials: true
+  origin: 'https://byte-sized-recipev2.vercel.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Adjust based on your needs
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 app.use(express.json());
 app.use(cookieParser());
