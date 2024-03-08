@@ -68,7 +68,7 @@ export default function Cookbook() {
       setIsFetching(true); // Assuming you have a state `isFetching` to track the loading status
       
       try {
-        let url = 'http://localhost:4000/api/recipes/latest';
+        let url = 'https://byte-sized-recipev2.vercel.app/api/recipes/latest';
         if (selectedOption && sortCategory) {
           if (sortCategory === 'cuisine') {
             url += `/by-cuisine/${encodeURIComponent(selectedOption)}`; // Adjust the URL for fetching by cuisine
