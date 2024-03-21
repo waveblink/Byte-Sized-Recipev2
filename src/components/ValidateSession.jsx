@@ -9,10 +9,9 @@ const ValidateSession = () => {
         async function validateSession() {
             try {
                 const response = await axios.get('https://byte-sized-recipev2.vercel.app/api/validate', {
-                    withCredentials: true, // Correct way to send cookies with Axios
+                    withCredentials: true, 
                 });
 
-                // Directly access response data without calling .json()
                 const { user } = response.data;
                 setUser(user);
 
@@ -24,7 +23,7 @@ const ValidateSession = () => {
         validateSession();
     }, [setUser]); 
 
-    return null; // Component does not render anything
+    return null; 
 };
 
 export default ValidateSession;
