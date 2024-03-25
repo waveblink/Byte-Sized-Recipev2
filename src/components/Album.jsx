@@ -83,36 +83,36 @@ export default function Album() {
       <WhoWeAreSection /> 
       {/* Container for the recipe cards */}
       <Grid container justifyContent="center" spacing={2} sx={{ mt: 4 }}>
-        {recipes.map((recipe) => (
-          <Grid item xs={12} sm={8} md={6} key={recipe.id}> {/* Adjusted for centering */}
+        {/* {recipes.map((recipe) => ( */}
+          <Grid item xs={12} sm={8} md={6} key={"test"}> Adjusted for centering
             <Card sx={{ maxWidth: 345, margin: 'auto' }}> {/* Center the card */}
               <CardHeader
-                title={recipe.name}
-                subheader={recipe.cuisine_name}
+                // title={recipe.name}
+                // subheader={recipe.cuisine_name}
               />
               <CardMedia
                 component="img"
                 height="194"
                 image="/croissant.jpg" 
-                alt={recipe.name}
+                // alt={recipe.name}
               />
               <CardContent>
                 <Typography variant="body2" color="text.secondary">
                 </Typography>
                 <Typography variant='body2' component='p'>
-                  <Rating name="read-only" value={parseFloat(recipe.rating)} readOnly />
+                  {/* <Rating name="read-only" value={parseFloat(recipe.rating)} readOnly /> */}
                 </Typography>
                 <Button 
                   variant="outlined" 
                   component={Link} 
-                  to={`/recipe/${recipe.id}`}
+                  // to={`/recipe/${recipe.id}`}
                   endIcon={<DoubleArrowIcon />}>
                     View
                 </Button>
               </CardContent>
             </Card>
           </Grid>
-        ))}
+        ))
       </Grid>
     </ThemeProvider>
   );
